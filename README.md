@@ -1,65 +1,69 @@
 # For Talal — A Royal Blessing
 
-A cinematic, scroll-driven blessing page for my nephew Talal.
+A regal, interactive blessing page for my nephew Talal.
 
 > ما شاء الله تبارك الله
 > May Allah grant Talal a long, blessed, and righteous life. Ameen.
 
 **Live:** https://shaidhms.github.io/talal-blessing/
 
-## What it is
+## How it works
 
-A single-page royal-themed web experience. As you scroll through 6 scenes:
+When you open the page, you see a **closed entry**: a slowly rotating golden 3D key floating in dark warm light, beneath "TALAL" in royal gold. A small prompt reads *"Turn the key to enter."*
 
-1. **Royal arch** — ornate Islamic mihrab arch with gold filigree, side motif panels, crown medallion. Talal's name appears in gold royal type.
-2. **The reveal** — a gold veil dissolves, warm light pours out, a celebratory firework bursts.
-3. **The portrait** — the camera dollies in. A video of Talal plays frame-by-frame, framed regally inside the gold arch.
-4. **Balloons & confetti** — gold balloons rise (click to pop them for a tiny duaa surprise), confetti rains down.
-5. **Fireworks** — continuous fireworks fill the sky as Arabic calligraphy of *ما شاء الله تبارك الله* fades in.
-6. **The duaa** — English blessing with the family footer.
+**Click the key.** It spins, lifts off, and dissolves — fireworks burst and confetti rains.
 
-Interactive throughout:
-- ✨ Cursor leaves a trail of gold sparkles
-- 🎆 Click anywhere → gold burst
-- 🎈 Click balloons → pop with a duaa note
-- 🎵 Mute toggle in the corner for the nasheed
+Then the experience opens:
 
-Built with **three.js**, **GSAP ScrollTrigger**, and vanilla JS — no build step.
+- 🎬 **Background:** the full-screen video of Talal plays on loop with a soft vignette
+- ✨ **Left panel:** an ornate gold-cornered frame with cycling duaas
+  - Each duaa shows Arabic, transliteration, and an English translation
+  - Auto-cycles every ~5.5 seconds with a fade transition
+  - Pagination dots — click any to jump to that duaa
+- 🎵 **Mute toggle** top-right for the nasheed
 
-## Replacing the video
+### Duaas included
 
-To swap the video used in the page:
+1. ما شاء الله تبارك الله · MashaAllah Tabarakallah
+2. بارك الله لك · Barakallahu Lak
+3. اللهم بارك · Allahumma Baarik
+4. اللهم احفظه · Allahumma ahfazhu
+5. رب اجعله من الصالحين · Rabbi-jʿalhu mina al-saaliheen
+6. اللهم اجعله قرة عين · Allahumma-jʿalhu qurrata ʿayn
+7. آمين · Ameen — full duaa for a long, blessed, righteous life
+
+## Stack
+
+- **three.js** (r161) — animated 3D gold key with PBR materials
+- Vanilla JS, no build step — runs straight from GitHub Pages
+- Native HTML5 `<video>` for the looping background
+- 2D canvas overlay for fireworks, confetti, cursor sparkle trail, click bursts
+
+## Swapping the video
+
+Drop your new video in as `talal-video.mp4` in the project root:
 
 ```bash
-# 1. Drop the new video into the project root
 cp /path/to/new-video.mp4 ./talal-video.mp4
-
-# 2. Re-extract frames (200 frames spread across the video duration)
-./extract-frames.sh talal-video.mp4
-
-# 3. Commit & push — GitHub Pages will update
-git add assets/frames talal-video.mp4
+git add talal-video.mp4
 git commit -m "update video"
 git push
 ```
 
-## Replacing the nasheed
+## Swapping / adding duaas
 
-Drop your `nasheed.mp3` into `assets/audio/nasheed.mp3` and push.
+Edit the `DUAAS` array in [`src/duaa-cycler.js`](src/duaa-cycler.js) — each duaa has `arabic`, `translit`, and `english`. Add as many as you like, they all rotate in.
+
+## Adding the nasheed
+
+Drop your `nasheed.mp3` into `assets/audio/nasheed.mp3` and push. The mute toggle handles autoplay restrictions gracefully — it'll be paused until the user taps it.
 
 ## Running locally
 
 ```bash
-# Any static server works
 python3 -m http.server 8000
 # then open http://localhost:8000
 ```
-
-## Stack
-
-- [three.js](https://threejs.org/) r161 (CDN, ES modules + importmap)
-- [GSAP](https://gsap.com/) 3 + ScrollTrigger (CDN)
-- Vanilla HTML/CSS/JS — no bundler
 
 ## Files
 
@@ -68,18 +72,14 @@ talal-blessing/
 ├── index.html
 ├── style.css
 ├── src/
-│   ├── main.js                # boot
-│   ├── door-scene.js          # three.js door + lighting + particles
-│   ├── frame-scrubber.js      # preloads frames, exposes current frame
-│   ├── scroll-choreography.js # GSAP ScrollTrigger choreography
-│   ├── audio.js               # nasheed loop + mute toggle
-│   └── textures.js            # procedural wood + brass canvas textures
-├── assets/
-│   ├── frames/                # frame-001.jpg ... frame-200.jpg
-│   └── audio/                 # nasheed.mp3, creak.mp3 (optional)
-├── extract-frames.sh          # video -> 200 frames helper
-├── sample-video.mp4           # placeholder video (replace)
-└── .nojekyll                  # tell GH Pages not to use Jekyll
+│   ├── main.js              # boot
+│   ├── key-scene.js         # 3D gold key (entry)
+│   ├── duaa-cycler.js       # left panel duaa cycling
+│   ├── effects.js           # fireworks, confetti, cursor trail
+│   └── audio.js             # nasheed + creak SFX
+├── talal-video.mp4          # background video (looped)
+├── assets/audio/            # nasheed.mp3 (optional)
+└── .nojekyll
 ```
 
 ---
