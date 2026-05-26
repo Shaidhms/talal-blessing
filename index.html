@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>For Talal · A Duaa</title>
+  <meta name="description" content="A blessing and duaa for Talal — MashaAllah Tabarakallah." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:wght@300;500;700&family=Inter:wght@300;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+  <!-- Loading overlay (frames preload) -->
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="loader-ring"></div>
+      <div class="loader-text">Preparing the blessing<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+      <div class="loader-bar"><div class="loader-bar-fill" id="loader-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Audio toggle -->
+  <button id="audio-toggle" aria-label="Toggle nasheed" title="Toggle nasheed">
+    <svg id="icon-muted" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+    <svg id="icon-unmuted" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+  </button>
+
+  <!-- Fixed stage: WebGL door + frame canvas overlay -->
+  <div id="stage">
+    <canvas id="webgl"></canvas>
+    <canvas id="frame-canvas"></canvas>
+
+    <!-- Hint shown while door is still closed -->
+    <div id="hint" class="overlay-text">
+      <div class="hint-arrow">↓</div>
+      <div>Scroll to enter</div>
+    </div>
+
+    <!-- Arabic calligraphy reveal -->
+    <div id="arabic" class="overlay-text">
+      <div class="arabic-text">ما شاء الله تبارك الله</div>
+      <div class="arabic-translit">MashaAllah Tabarakallah</div>
+    </div>
+
+    <!-- English duaa reveal -->
+    <div id="english" class="overlay-text">
+      <div class="english-line-1">For our beloved Talal</div>
+      <div class="english-duaa">May Allah grant you a long, blessed,<br/>and righteous life.</div>
+      <div class="ameen">آمين · Ameen</div>
+    </div>
+  </div>
+
+  <!-- Scroll runway: makes the page tall enough to drive the choreography -->
+  <div id="scroll-runway"></div>
+
+  <!-- Footer (visible at the end of scroll) -->
+  <footer id="footer">
+    <div class="footer-inner">
+      <div class="footer-line">Made with love by Shaid Hakkeem</div>
+      <div class="footer-handles">
+        <a href="https://linkedin.com/in/shaidhms" target="_blank" rel="noopener">@shaidhms</a>
+        <span class="dot">·</span>
+        <a href="https://instagram.com/shaid.hakkeem" target="_blank" rel="noopener">@shaid.hakkeem</a>
+      </div>
+    </div>
+  </footer>
+
+  <audio id="nasheed" loop preload="auto">
+    <source src="assets/audio/nasheed.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

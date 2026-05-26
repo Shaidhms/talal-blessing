@@ -1,0 +1,283 @@
+:root {
+  --warm-deep: #1a0d05;
+  --warm-mid: #2b1608;
+  --warm-glow: #f6c878;
+  --warm-light: #ffeac4;
+  --gold: #d4a857;
+  --gold-bright: #f3d27a;
+  --text-on-dark: #f6e5c8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: #0a0503;
+  color: var(--text-on-dark);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* ---------- Fixed stage ---------- */
+
+#stage {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #1a0d05 0%, #050201 70%);
+}
+
+#webgl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#frame-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* This canvas is drawn behind the door geometry; its visible portion is masked
+     by the door geometry occluding it. The canvas matches the WebGL canvas size
+     and we draw the current frame inside the doorway rectangle (computed each frame). */
+}
+
+/* ---------- Overlay text layers ---------- */
+
+.overlay-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+#hint {
+  color: var(--warm-light);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  gap: 0.6rem;
+  text-shadow: 0 0 30px rgba(246, 200, 120, 0.4);
+}
+.hint-arrow {
+  font-size: 2rem;
+  animation: bob 2s ease-in-out infinite;
+  opacity: 0.7;
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+
+#arabic {
+  gap: 1.5rem;
+}
+.arabic-text {
+  font-family: 'Amiri', serif;
+  font-size: clamp(2.2rem, 7vw, 5.5rem);
+  font-weight: 700;
+  color: var(--gold-bright);
+  text-shadow:
+    0 0 30px rgba(243, 210, 122, 0.6),
+    0 0 60px rgba(243, 210, 122, 0.4),
+    0 0 100px rgba(243, 210, 122, 0.25);
+  direction: rtl;
+  line-height: 1.4;
+}
+.arabic-translit {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(1rem, 2.2vw, 1.5rem);
+  color: var(--warm-light);
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+#english {
+  gap: 1.2rem;
+  padding: 0 1.5rem;
+}
+.english-line-1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  color: var(--warm-light);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.english-duaa {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: clamp(1.8rem, 4.5vw, 3rem);
+  line-height: 1.4;
+  color: var(--gold-bright);
+  text-shadow: 0 0 40px rgba(243, 210, 122, 0.35);
+  max-width: 900px;
+}
+.ameen {
+  font-family: 'Amiri', serif;
+  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  margin-top: 0.4rem;
+}
+
+/* ---------- Scroll runway ---------- */
+
+#scroll-runway {
+  height: 600vh;        /* 6 viewport heights of scroll drives the whole choreography */
+  position: relative;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ---------- Footer ---------- */
+
+#footer {
+  position: relative;
+  z-index: 2;
+  padding: 3rem 1.5rem 4rem;
+  text-align: center;
+  background: linear-gradient(to bottom, transparent 0%, #0a0503 30%);
+  margin-top: -10vh;
+}
+.footer-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  opacity: 0.75;
+}
+.footer-line {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--warm-light);
+  font-size: 1rem;
+}
+.footer-handles {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: var(--gold);
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.footer-handles a {
+  color: var(--gold);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-handles a:hover { color: var(--gold-bright); }
+.footer-handles .dot { opacity: 0.5; }
+
+/* ---------- Audio toggle ---------- */
+
+#audio-toggle {
+  position: fixed;
+  top: 1.2rem;
+  right: 1.2rem;
+  z-index: 10;
+  background: rgba(20, 10, 4, 0.7);
+  border: 1px solid rgba(212, 168, 87, 0.3);
+  color: var(--gold-bright);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s;
+}
+#audio-toggle:hover {
+  background: rgba(40, 20, 8, 0.9);
+  border-color: rgba(212, 168, 87, 0.6);
+  transform: scale(1.05);
+}
+
+/* ---------- Loader ---------- */
+
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #0a0503;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s ease;
+}
+#loader.gone {
+  opacity: 0;
+  pointer-events: none;
+}
+.loader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 80vw;
+}
+.loader-ring {
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(212, 168, 87, 0.2);
+  border-top-color: var(--gold-bright);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--warm-light);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+.dots span {
+  display: inline-block;
+  animation: dotpulse 1.4s infinite;
+}
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotpulse {
+  0%, 60%, 100% { opacity: 0.3; }
+  30% { opacity: 1; }
+}
+.loader-bar {
+  width: 280px;
+  max-width: 70vw;
+  height: 2px;
+  background: rgba(212, 168, 87, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.loader-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to right, var(--gold), var(--gold-bright));
+  transition: width 0.2s ease-out;
+  box-shadow: 0 0 12px rgba(243, 210, 122, 0.6);
+}
