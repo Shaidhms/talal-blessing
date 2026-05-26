@@ -17,7 +17,15 @@ html, body {
   font-family: 'Cormorant Garamond', Georgia, serif;
   overflow: hidden;
   height: 100vh;
+  height: 100dvh;        /* dynamic viewport height — handles iOS URL bar correctly */
   width: 100vw;
+  /* Respect notch / safe areas on iPhone */
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  /* No bouncy overscroll on iOS */
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 body { position: relative; }
 

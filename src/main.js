@@ -202,11 +202,31 @@ async function boot() {
     }, 600);
   }
 
+  // ----- Fullscreen handling -----
+  // Standard Fullscreen API (Android Chrome, iPad Safari). On iPhone Safari
+  // this is a no-op — the user can add to home screen for true fullscreen.
+  let fullscreenTried = false;
+  function tryEnterFullscreen() {
+    if (fullscreenTried) return;
+    fullscreenTried = true;
+    const el = document.documentElement;
+    const req = el.requestFullscreen ||
+                el.webkitRequestFullscreen ||
+                el.mozRequestFullScreen ||
+                el.msRequestFullscreen;
+    if (req) {
+      try { req.call(el); } catch (e) {}
+    }
+    // iOS Safari URL-bar collapse trick (works in landscape on older iOS)
+    setTimeout(() => window.scrollTo(0, 1), 100);
+  }
+
   // Bind hotspot clicks
   document.querySelectorAll('.cockpit-hotspot').forEach((btn) => {
     const id = btn.dataset.quadrant;
     const fire = (e) => {
       e.preventDefault();
+      tryEnterFullscreen();   // request fullscreen on the very first tap
       activate(id);
     };
     btn.addEventListener('click', fire);
