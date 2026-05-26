@@ -2,12 +2,14 @@ import { DoorScene } from './door-scene.js';
 import { FrameScrubber } from './frame-scrubber.js';
 import { ScrollChoreography } from './scroll-choreography.js';
 import { AudioController } from './audio.js';
+import { EffectsLayer } from './effects.js';
+import { Balloons } from './balloons.js';
 
 async function boot() {
   const loaderEl = document.getElementById('loader');
   const loaderFill = document.getElementById('loader-fill');
 
-  // 1) Frames first — they're the heaviest asset
+  // 1) Frames first
   const scrubber = new FrameScrubber({
     count: 200,
     basePath: 'assets/frames/',
@@ -16,14 +18,24 @@ async function boot() {
     },
   });
 
-  // 2) Build the 3D scene in parallel
+  // 2) 3D scene
   const canvas = document.getElementById('webgl');
   const scene = new DoorScene(canvas);
 
-  // 3) Wait for frames
+  // 3) Effects overlay
+  const effects = new EffectsLayer(document.getElementById('effects-canvas'));
+
+  // 4) Balloons
+  const balloons = new Balloons(document.getElementById('balloons-layer'), {
+    onSpawnBurst: (x, y) => {
+      const dpr = Math.min(window.devicePixelRatio, 2);
+      effects.spawnBurst(x * dpr, y * dpr, 36);
+    },
+  });
+
   await scrubber.load();
 
-  // 4) Audio + scroll choreography
+  // 5) Audio
   const audio = new AudioController({
     nasheedEl: document.getElementById('nasheed'),
     toggleEl: document.getElementById('audio-toggle'),
@@ -31,27 +43,34 @@ async function boot() {
     iconUnmuted: document.getElementById('icon-unmuted'),
   });
 
+  // 6) Scroll choreography orchestrating everything
   const choreography = new ScrollChoreography({
     doorScene: scene,
     frameScrubber: scrubber,
+    effects,
+    balloons,
     hintEl: document.getElementById('hint'),
+    nameRevealEl: document.getElementById('name-reveal'),
     arabicEl: document.getElementById('arabic'),
     englishEl: document.getElementById('english'),
-    onCreak: () => audio.playCreak(),
+    onReveal: () => audio.playCreak(),
+    onFireworksStart: () => {},
+    onConfetti: () => {},
   });
 
-  // 5) Animation loop
+  // 7) Render loop
   let last = performance.now();
   const tick = (now) => {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     choreography.apply(dt);
     scene.render();
+    effects.update(dt);
+    effects.draw();
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
 
-  // 6) Fade out the loader
   setTimeout(() => loaderEl.classList.add('gone'), 250);
 }
 

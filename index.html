@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>For Talal · A Duaa</title>
+  <title>For Talal · A Royal Blessing</title>
   <meta name="description" content="A blessing and duaa for Talal — MashaAllah Tabarakallah." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:wght@300;500;700&family=Inter:wght@300;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:wght@300;500;700&family=Cinzel:wght@400;700;900&family=Inter:wght@300;500&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="style.css" />
 
@@ -26,52 +26,69 @@
 </head>
 <body>
 
-  <!-- Loading overlay (frames preload) -->
   <div id="loader">
     <div class="loader-inner">
       <div class="loader-ring"></div>
-      <div class="loader-text">Preparing the blessing<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+      <div class="loader-text">Preparing a royal blessing<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
       <div class="loader-bar"><div class="loader-bar-fill" id="loader-fill"></div></div>
     </div>
   </div>
 
-  <!-- Audio toggle -->
   <button id="audio-toggle" aria-label="Toggle nasheed" title="Toggle nasheed">
     <svg id="icon-muted" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
     <svg id="icon-unmuted" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
   </button>
 
-  <!-- Fixed stage: WebGL door + frame canvas overlay -->
+  <!-- Fixed stage -->
   <div id="stage">
     <canvas id="webgl"></canvas>
-    <canvas id="frame-canvas"></canvas>
+    <canvas id="effects-canvas"></canvas>
 
-    <!-- Hint shown while door is still closed -->
+    <!-- Scene 1: name reveal at top of arch -->
+    <div id="name-reveal" class="overlay-text">
+      <div class="name-eyebrow">A Royal Blessing</div>
+      <div class="name-talal">TALAL</div>
+      <div class="name-ornament">
+        <span class="orn-line"></span>
+        <span class="orn-diamond">✦</span>
+        <span class="orn-line"></span>
+      </div>
+    </div>
+
+    <!-- Hint -->
     <div id="hint" class="overlay-text">
       <div class="hint-arrow">↓</div>
-      <div>Scroll to enter</div>
+      <div>Begin the celebration</div>
     </div>
 
-    <!-- Arabic calligraphy reveal -->
+    <!-- Balloons container (Scene 4) -->
+    <div id="balloons-layer"></div>
+
+    <!-- Arabic calligraphy (Scene 5) -->
     <div id="arabic" class="overlay-text">
       <div class="arabic-text">ما شاء الله تبارك الله</div>
-      <div class="arabic-translit">MashaAllah Tabarakallah</div>
+      <div class="arabic-translit">MashaAllah · Tabarakallah</div>
     </div>
 
-    <!-- English duaa reveal -->
+    <!-- English duaa (Scene 6) -->
     <div id="english" class="overlay-text">
-      <div class="english-line-1">For our beloved Talal</div>
-      <div class="english-duaa">May Allah grant you a long, blessed,<br/>and righteous life.</div>
+      <div class="english-eyebrow">For Our Beloved</div>
+      <div class="english-talal">Talal</div>
+      <div class="english-duaa">
+        May Allah grant you a long, blessed,<br/>
+        and righteous life.
+      </div>
       <div class="ameen">آمين · Ameen</div>
     </div>
   </div>
 
-  <!-- Scroll runway: makes the page tall enough to drive the choreography -->
+  <!-- Scroll runway -->
   <div id="scroll-runway"></div>
 
-  <!-- Footer (visible at the end of scroll) -->
+  <!-- Footer -->
   <footer id="footer">
     <div class="footer-inner">
+      <div class="footer-ornament">✦ ✦ ✦</div>
       <div class="footer-line">Made with love by Shaid Hakkeem</div>
       <div class="footer-handles">
         <a href="https://linkedin.com/in/shaidhms" target="_blank" rel="noopener">@shaidhms</a>

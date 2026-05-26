@@ -1,4 +1,4 @@
-# For Talal — A Duaa
+# For Talal — A Royal Blessing
 
 A cinematic, scroll-driven blessing page for my nephew Talal.
 
@@ -9,30 +9,37 @@ A cinematic, scroll-driven blessing page for my nephew Talal.
 
 ## What it is
 
-A single-page web experience. As you scroll:
+A single-page royal-themed web experience. As you scroll through 6 scenes:
 
-1. A warm wooden door stands in dim light
-2. It opens, light pours out
-3. A video of Talal plays frame-by-frame inside the doorway
-4. Arabic calligraphy of *MashaAllah Tabarakallah* appears
-5. The duaa is written in English with the family footer
+1. **Royal arch** — ornate Islamic mihrab arch with gold filigree, side motif panels, crown medallion. Talal's name appears in gold royal type.
+2. **The reveal** — a gold veil dissolves, warm light pours out, a celebratory firework bursts.
+3. **The portrait** — the camera dollies in. A video of Talal plays frame-by-frame, framed regally inside the gold arch.
+4. **Balloons & confetti** — gold balloons rise (click to pop them for a tiny duaa surprise), confetti rains down.
+5. **Fireworks** — continuous fireworks fill the sky as Arabic calligraphy of *ما شاء الله تبارك الله* fades in.
+6. **The duaa** — English blessing with the family footer.
+
+Interactive throughout:
+- ✨ Cursor leaves a trail of gold sparkles
+- 🎆 Click anywhere → gold burst
+- 🎈 Click balloons → pop with a duaa note
+- 🎵 Mute toggle in the corner for the nasheed
 
 Built with **three.js**, **GSAP ScrollTrigger**, and vanilla JS — no build step.
 
-## Replacing the sample video
+## Replacing the video
 
-The repo ships with a placeholder video (`sample-video.mp4`). To use the real one:
+To swap the video used in the page:
 
 ```bash
-# 1. Drop the real video into the project root
-cp /path/to/talal-crawling.mp4 ./talal-crawling.mp4
+# 1. Drop the new video into the project root
+cp /path/to/new-video.mp4 ./talal-video.mp4
 
 # 2. Re-extract frames (200 frames spread across the video duration)
-./extract-frames.sh talal-crawling.mp4
+./extract-frames.sh talal-video.mp4
 
 # 3. Commit & push — GitHub Pages will update
-git add assets/frames talal-crawling.mp4
-git commit -m "use real video"
+git add assets/frames talal-video.mp4
+git commit -m "update video"
 git push
 ```
 

@@ -1,240 +1,302 @@
 import * as THREE from 'three';
-import { makeWoodTexture, makeWoodRoughnessTexture, makeUpdatableCanvasTexture } from './textures.js';
+import { makeOrnateArchTexture, makeGoldFiligreePattern, makeUpdatableCanvasTexture } from './textures.js';
+
+// ARCH-SHAPE constants (pointed Islamic mihrab arch built from a Shape)
+const ARCH_W = 1.8;
+const ARCH_BASE_H = 1.6;          // rectangular base
+const ARCH_PEAK_H = ARCH_BASE_H + 1.4;  // tip of the pointed arch
+const ARCH_HALF_W = ARCH_W / 2;
+
+function makeArchShape() {
+  const s = new THREE.Shape();
+  s.moveTo(-ARCH_HALF_W, 0);
+  s.lineTo(-ARCH_HALF_W, ARCH_BASE_H);
+  // Pointed arch — two bezier curves meeting at the top
+  s.bezierCurveTo(
+    -ARCH_HALF_W, ARCH_BASE_H + 0.5,
+    -ARCH_HALF_W * 0.6, ARCH_PEAK_H,
+    0, ARCH_PEAK_H
+  );
+  s.bezierCurveTo(
+    ARCH_HALF_W * 0.6, ARCH_PEAK_H,
+    ARCH_HALF_W, ARCH_BASE_H + 0.5,
+    ARCH_HALF_W, ARCH_BASE_H
+  );
+  s.lineTo(ARCH_HALF_W, 0);
+  s.lineTo(-ARCH_HALF_W, 0);
+  return s;
+}
+
+// Build the "wall" as a big rectangle with the arch shape cut out
+function makeWallWithArchHole() {
+  const wallW = 30;
+  const wallH = 16;
+  const outer = new THREE.Shape();
+  outer.moveTo(-wallW / 2, -2);
+  outer.lineTo(-wallW / 2, wallH);
+  outer.lineTo(wallW / 2, wallH);
+  outer.lineTo(wallW / 2, -2);
+  outer.lineTo(-wallW / 2, -2);
+
+  // Hole = arch
+  const hole = new THREE.Path();
+  hole.moveTo(-ARCH_HALF_W, 0);
+  hole.lineTo(-ARCH_HALF_W, ARCH_BASE_H);
+  hole.bezierCurveTo(
+    -ARCH_HALF_W, ARCH_BASE_H + 0.5,
+    -ARCH_HALF_W * 0.6, ARCH_PEAK_H,
+    0, ARCH_PEAK_H
+  );
+  hole.bezierCurveTo(
+    ARCH_HALF_W * 0.6, ARCH_PEAK_H,
+    ARCH_HALF_W, ARCH_BASE_H + 0.5,
+    ARCH_HALF_W, ARCH_BASE_H
+  );
+  hole.lineTo(ARCH_HALF_W, 0);
+  hole.lineTo(-ARCH_HALF_W, 0);
+  outer.holes.push(hole);
+  return outer;
+}
 
 export class DoorScene {
   constructor(canvas) {
     this.canvas = canvas;
-    this.renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: false,
-    });
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.15;
-    this.renderer.shadowMap.enabled = false;
+    this.renderer.toneMappingExposure = 1.25;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0a0503);
-    this.scene.fog = new THREE.Fog(0x0a0503, 4, 18);
+    this.scene.background = new THREE.Color(0x0a0612);
+    this.scene.fog = new THREE.Fog(0x0a0612, 5, 22);
 
     this.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    this.camera.position.set(0, 1.4, 5.2);
-    this.camera.lookAt(0, 1.4, 0);
+    this.camera.position.set(0, 1.4, 5.6);
+    this.camera.lookAt(0, 1.5, 0);
 
     this._buildScene();
     this._setupResize();
   }
 
   _buildScene() {
-    // ---------- Ambient + key lighting ----------
-    const ambient = new THREE.AmbientLight(0x5a3520, 0.8);
-    this.scene.add(ambient);
+    // ---------- Lighting ----------
+    this.scene.add(new THREE.AmbientLight(0x4a2f1a, 1.0));
 
-    // Warm front fill so the closed door has soft visibility before opening
-    const frontFill = new THREE.DirectionalLight(0xd9a878, 0.9);
-    frontFill.position.set(2, 4, 6);
-    this.scene.add(frontFill);
-
-    // Small key from above to define the architrave/door edges
-    const keyLight = new THREE.DirectionalLight(0xffd29c, 0.5);
-    keyLight.position.set(-3, 6, 4);
+    const keyLight = new THREE.DirectionalLight(0xffd99c, 1.1);
+    keyLight.position.set(2, 5, 4);
     this.scene.add(keyLight);
 
-    // ---------- Wall (with door-shaped hole — built as 4 panels around the doorway) ----------
+    const fillLight = new THREE.DirectionalLight(0x8a6a4a, 0.5);
+    fillLight.position.set(-3, 2, 6);
+    this.scene.add(fillLight);
+
+    // ---------- Wall (deep navy with cut-out arch) ----------
+    const wallShape = makeWallWithArchHole();
+    const wallGeom = new THREE.ShapeGeometry(wallShape);
     const wallMat = new THREE.MeshStandardMaterial({
-      color: 0x140905,
+      color: 0x0e0a1a,
       roughness: 0.95,
       metalness: 0,
     });
-    const doorOpenW = 1.6;
-    const doorOpenH = 3.2;
-    const wallZ = -0.06;
-    // Top strip
-    const wallTop = new THREE.Mesh(new THREE.PlaneGeometry(20, 6), wallMat);
-    wallTop.position.set(0, doorOpenH + 3, wallZ);
-    this.scene.add(wallTop);
-    // Bottom strip
-    const wallBot = new THREE.Mesh(new THREE.PlaneGeometry(20, 3), wallMat);
-    wallBot.position.set(0, -1.5, wallZ);
-    this.scene.add(wallBot);
-    // Left
-    const wallLeft = new THREE.Mesh(new THREE.PlaneGeometry(10, doorOpenH + 0.4), wallMat);
-    wallLeft.position.set(-(doorOpenW / 2 + 5 + 0.05), doorOpenH / 2, wallZ);
-    this.scene.add(wallLeft);
-    // Right
-    const wallRight = new THREE.Mesh(new THREE.PlaneGeometry(10, doorOpenH + 0.4), wallMat);
-    wallRight.position.set((doorOpenW / 2 + 5 + 0.05), doorOpenH / 2, wallZ);
-    this.scene.add(wallRight);
+    this.wall = new THREE.Mesh(wallGeom, wallMat);
+    this.wall.position.set(0, 0, 0);
+    this.scene.add(this.wall);
 
-    // ---------- Frame plane (video frames painted here, behind the door) ----------
+    // ---------- Gold filigree border around the arch ----------
+    const filigreeTex = makeGoldFiligreePattern();
+    const filigreeMat = new THREE.MeshStandardMaterial({
+      map: filigreeTex,
+      transparent: true,
+      alphaTest: 0.05,
+      emissive: 0x6a4a18,
+      emissiveIntensity: 0.6,
+      side: THREE.DoubleSide,
+    });
+
+    // Build filigree border by extruding the arch shape into a thin ring
+    const archShape = makeArchShape();
+    const innerArchShape = makeArchShape();
+    // Inset the inner shape to create a "frame" ring (we'll do this via an offset Shape)
+    const ringShape = new THREE.Shape();
+    {
+      const s = ringShape;
+      const inset = 0.18;
+      s.moveTo(-ARCH_HALF_W - inset, -inset);
+      s.lineTo(-ARCH_HALF_W - inset, ARCH_BASE_H);
+      s.bezierCurveTo(
+        -ARCH_HALF_W - inset, ARCH_BASE_H + 0.55,
+        -ARCH_HALF_W * 0.55, ARCH_PEAK_H + inset * 1.2,
+        0, ARCH_PEAK_H + inset * 1.2
+      );
+      s.bezierCurveTo(
+        ARCH_HALF_W * 0.55, ARCH_PEAK_H + inset * 1.2,
+        ARCH_HALF_W + inset, ARCH_BASE_H + 0.55,
+        ARCH_HALF_W + inset, ARCH_BASE_H
+      );
+      s.lineTo(ARCH_HALF_W + inset, -inset);
+      s.lineTo(-ARCH_HALF_W - inset, -inset);
+
+      const innerHole = new THREE.Path();
+      innerHole.moveTo(-ARCH_HALF_W, 0);
+      innerHole.lineTo(-ARCH_HALF_W, ARCH_BASE_H);
+      innerHole.bezierCurveTo(
+        -ARCH_HALF_W, ARCH_BASE_H + 0.5,
+        -ARCH_HALF_W * 0.6, ARCH_PEAK_H,
+        0, ARCH_PEAK_H
+      );
+      innerHole.bezierCurveTo(
+        ARCH_HALF_W * 0.6, ARCH_PEAK_H,
+        ARCH_HALF_W, ARCH_BASE_H + 0.5,
+        ARCH_HALF_W, ARCH_BASE_H
+      );
+      innerHole.lineTo(ARCH_HALF_W, 0);
+      innerHole.lineTo(-ARCH_HALF_W, 0);
+      ringShape.holes.push(innerHole);
+    }
+
+    const ringGeom = new THREE.ShapeGeometry(ringShape);
+    // Use a gold metallic material for the filigree frame
+    const goldMat = new THREE.MeshStandardMaterial({
+      color: 0xe8c060,
+      roughness: 0.3,
+      metalness: 0.95,
+      emissive: 0x5a3010,
+      emissiveIntensity: 0.4,
+    });
+    this.filigreeFrame = new THREE.Mesh(ringGeom, goldMat);
+    this.filigreeFrame.position.set(0, 0, 0.05);
+    this.scene.add(this.filigreeFrame);
+
+    // ---------- Ornate gold motif tiles flanking the arch ----------
+    const motifTex = makeOrnateArchTexture(256);
+    const motifMat = new THREE.MeshStandardMaterial({
+      map: motifTex,
+      transparent: true,
+      alphaTest: 0.1,
+      emissive: 0x6a4a18,
+      emissiveIntensity: 0.5,
+      side: THREE.DoubleSide,
+    });
+
+    const leftMotif = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 2.6), motifMat);
+    leftMotif.position.set(-ARCH_HALF_W - 0.95, ARCH_BASE_H / 2 + 0.5, 0.08);
+    this.scene.add(leftMotif);
+
+    const rightMotif = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 2.6), motifMat);
+    rightMotif.position.set(ARCH_HALF_W + 0.95, ARCH_BASE_H / 2 + 0.5, 0.08);
+    this.scene.add(rightMotif);
+
+    // Top medallion above the arch (crown motif)
+    const medallionMat = new THREE.MeshStandardMaterial({
+      map: motifTex,
+      transparent: true,
+      alphaTest: 0.1,
+      emissive: 0x8a5a20,
+      emissiveIntensity: 0.7,
+      side: THREE.DoubleSide,
+    });
+    const medallion = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.9), medallionMat);
+    medallion.position.set(0, ARCH_PEAK_H + 0.6, 0.08);
+    this.scene.add(medallion);
+    this.medallion = medallion;
+
+    // ---------- The "veil" — covers the arch opening before reveal ----------
+    // This is a gold geometric shape that pulls apart to reveal what's inside
+    const veilShape = makeArchShape();
+    const veilGeom = new THREE.ShapeGeometry(veilShape);
+
+    const veilMat = new THREE.MeshStandardMaterial({
+      map: motifTex,
+      color: 0xc89040,
+      roughness: 0.4,
+      metalness: 0.85,
+      emissive: 0x4a2810,
+      emissiveIntensity: 0.6,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 1,
+    });
+
+    // Veil split in two halves that swing apart
+    this.veilLeft = new THREE.Mesh(veilGeom, veilMat.clone());
+    this.veilRight = new THREE.Mesh(veilGeom.clone(), veilMat.clone());
+
+    // Pivot groups
+    this.veilLeftPivot = new THREE.Group();
+    this.veilLeftPivot.position.set(-ARCH_HALF_W, 0, 0.07);
+    this.veilLeft.position.set(ARCH_HALF_W, 0, 0); // local origin at left edge
+    // Use a clipping plane to show only the left half of the arch shape
+    this.veilLeft.material.clippingPlanes = [new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0)];
+    this.veilLeftPivot.add(this.veilLeft);
+    this.scene.add(this.veilLeftPivot);
+
+    this.veilRightPivot = new THREE.Group();
+    this.veilRightPivot.position.set(ARCH_HALF_W, 0, 0.07);
+    this.veilRight.position.set(-ARCH_HALF_W, 0, 0);
+    this.veilRight.material.clippingPlanes = [new THREE.Plane(new THREE.Vector3(1, 0, 0), 0)];
+    this.veilRightPivot.add(this.veilRight);
+    this.scene.add(this.veilRightPivot);
+
+    this.renderer.localClippingEnabled = true;
+
+    // ---------- Frame plane (behind the arch — shows video frames) ----------
     const { texture: frameTex, canvas: frameCanvas, ctx: frameCtx } = makeUpdatableCanvasTexture(1024, 1024);
     this.frameTexture = frameTex;
     this.frameCanvas = frameCanvas;
     this.frameCtx = frameCtx;
 
-    const framePlaneGeom = new THREE.PlaneGeometry(1.7, 3.2);
-    const framePlaneMat = new THREE.MeshBasicMaterial({
-      map: frameTex,
-      toneMapped: true,
-    });
+    // Frame plane sized to the arch interior — letterboxing handled in updateFrameImage
+    const framePlaneGeom = new THREE.PlaneGeometry(1.7, 2.8);
+    const framePlaneMat = new THREE.MeshBasicMaterial({ map: frameTex });
     this.framePlane = new THREE.Mesh(framePlaneGeom, framePlaneMat);
-    this.framePlane.position.set(0, 1.55, -0.8);
+    this.framePlane.position.set(0, ARCH_PEAK_H / 2 - 0.2, -0.6);
     this.scene.add(this.framePlane);
 
-    // ---------- Warm "room behind the door" light ----------
-    // Sits between the frame plane and the door, casts warm light forward
-    this.warmLight = new THREE.PointLight(0xffb066, 0, 8, 1.6);
-    this.warmLight.position.set(0, 1.6, -0.25);
+    // ---------- Warm light behind the arch ----------
+    this.warmLight = new THREE.PointLight(0xffd080, 0, 10, 1.4);
+    this.warmLight.position.set(0, 1.4, -0.2);
     this.scene.add(this.warmLight);
 
-    // A secondary spotlight that points at the door from behind for rim
-    this.rimLight = new THREE.SpotLight(0xffd09a, 0, 10, Math.PI / 3, 0.7, 1.4);
-    this.rimLight.position.set(0, 1.5, -1.4);
-    this.rimLight.target.position.set(0, 1.5, 1);
-    this.scene.add(this.rimLight);
-    this.scene.add(this.rimLight.target);
-
-    // ---------- Door frame (architrave) ----------
-    const archMat = new THREE.MeshStandardMaterial({
-      color: 0x2c1a0a,
-      roughness: 0.85,
-      metalness: 0.0,
-    });
-    const archThickness = 0.12;
-    const archDepth = 0.15;
-    const doorW = 1.6;
-    const doorH = 3.2;
-
-    // Top
-    const archTop = new THREE.Mesh(
-      new THREE.BoxGeometry(doorW + archThickness * 2 + 0.05, archThickness, archDepth),
-      archMat
-    );
-    archTop.position.set(0, doorH + archThickness / 2 - 0.05, 0);
-    this.scene.add(archTop);
-
-    // Left
-    const archLeft = new THREE.Mesh(
-      new THREE.BoxGeometry(archThickness, doorH, archDepth),
-      archMat
-    );
-    archLeft.position.set(-(doorW / 2 + archThickness / 2), doorH / 2, 0);
-    this.scene.add(archLeft);
-
-    // Right
-    const archRight = archLeft.clone();
-    archRight.position.x = (doorW / 2 + archThickness / 2);
-    this.scene.add(archRight);
-
-    // Threshold (floor lip)
-    const threshold = new THREE.Mesh(
-      new THREE.BoxGeometry(doorW + archThickness * 2 + 0.05, archThickness * 0.6, archDepth),
-      archMat
-    );
-    threshold.position.set(0, -archThickness * 0.3, 0);
-    this.scene.add(threshold);
-
-    // ---------- The Door itself ----------
-    const woodTex = makeWoodTexture(512, 1024);
-    const roughTex = makeWoodRoughnessTexture(256, 512);
-
-    const doorMat = new THREE.MeshStandardMaterial({
-      map: woodTex,
-      roughnessMap: roughTex,
-      roughness: 0.75,
-      metalness: 0.05,
-      color: 0xffffff,
-    });
-
-    // Pivot group so the door rotates around its left edge (hinge)
-    this.doorPivot = new THREE.Group();
-    this.doorPivot.position.set(-doorW / 2, doorH / 2, 0);
-    this.scene.add(this.doorPivot);
-
-    const doorGeom = new THREE.BoxGeometry(doorW, doorH, 0.08);
-    this.door = new THREE.Mesh(doorGeom, doorMat);
-    // Offset the door so its left edge is at the pivot
-    this.door.position.set(doorW / 2, 0, 0);
-    this.doorPivot.add(this.door);
-
-    // Raised door panels (decorative)
-    const panelMat = new THREE.MeshStandardMaterial({
-      map: woodTex.clone(),
-      roughness: 0.6,
-      metalness: 0.05,
-      color: 0xb88b5a,
-    });
-    panelMat.map.needsUpdate = true;
-
-    const panelGeom = new THREE.BoxGeometry(doorW * 0.6, doorH * 0.28, 0.02);
-    // Top panel
-    const panelTop = new THREE.Mesh(panelGeom, panelMat);
-    panelTop.position.set(doorW / 2, doorH * 0.28, 0.05);
-    this.doorPivot.add(panelTop);
-    // Bottom panel
-    const panelBot = new THREE.Mesh(panelGeom, panelMat);
-    panelBot.position.set(doorW / 2, -doorH * 0.28, 0.05);
-    this.doorPivot.add(panelBot);
-
-    // ---------- Brass handle ----------
-    const brassMat = new THREE.MeshStandardMaterial({
-      color: 0xc8a55a,
-      roughness: 0.25,
-      metalness: 0.9,
-    });
-    const handleBase = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.04, 0.04, 0.08, 16),
-      brassMat
-    );
-    handleBase.rotation.x = Math.PI / 2;
-    handleBase.position.set(doorW * 0.9, 0, 0.07);
-    this.doorPivot.add(handleBase);
-
-    const handleKnob = new THREE.Mesh(
-      new THREE.SphereGeometry(0.07, 24, 16),
-      brassMat
-    );
-    handleKnob.position.set(doorW * 0.9, 0, 0.12);
-    this.doorPivot.add(handleKnob);
-
-    // ---------- Dust particles ----------
+    // ---------- Gold particle motes ----------
     this._buildParticles();
 
-    // ---------- God-ray volume (a soft warm plane in front of the door) ----------
+    // ---------- God-ray glow plane ----------
     this.glowPlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(4, 5),
+      new THREE.PlaneGeometry(4.5, 5.5),
       new THREE.MeshBasicMaterial({
-        color: 0xffb066,
+        color: 0xffc878,
         transparent: true,
         opacity: 0,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       })
     );
-    this.glowPlane.position.set(0, 1.6, 0.4);
+    this.glowPlane.position.set(0, ARCH_PEAK_H / 2, 0.4);
     this.scene.add(this.glowPlane);
   }
 
   _buildParticles() {
-    const count = 240;
+    const count = 320;
     const positions = new Float32Array(count * 3);
     const velocities = new Float32Array(count);
+    const sizes = new Float32Array(count);
     for (let i = 0; i < count; i++) {
-      positions[i * 3 + 0] = (Math.random() - 0.5) * 6;
-      positions[i * 3 + 1] = Math.random() * 4;
+      positions[i * 3 + 0] = (Math.random() - 0.5) * 8;
+      positions[i * 3 + 1] = Math.random() * 5;
       positions[i * 3 + 2] = (Math.random() - 0.3) * 3;
-      velocities[i] = 0.0005 + Math.random() * 0.001;
+      velocities[i] = 0.0007 + Math.random() * 0.0012;
+      sizes[i] = 0.03 + Math.random() * 0.04;
     }
     const geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geom.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
     const mat = new THREE.PointsMaterial({
-      color: 0xffd9a8,
-      size: 0.03,
+      color: 0xffd680,
+      size: 0.05,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.7,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
     });
@@ -255,25 +317,30 @@ export class DoorScene {
     onResize();
   }
 
-  // Paint the current video frame onto the texture for the plane behind the door.
   updateFrameImage(img) {
     if (!img) return;
     const cw = this.frameCanvas.width;
     const ch = this.frameCanvas.height;
     const ctx = this.frameCtx;
-    ctx.fillStyle = '#0a0503';
+    // Soft warm backdrop so letterboxing looks intentional (not black bars)
+    const grad = ctx.createRadialGradient(cw / 2, ch / 2, 0, cw / 2, ch / 2, cw * 0.8);
+    grad.addColorStop(0, '#3a1f10');
+    grad.addColorStop(1, '#0a0612');
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, cw, ch);
 
-    // Letterbox/cover the image into the canvas
+    // CONTAIN (letterbox) — preserve aspect ratio so full video frame is visible
     const ir = img.width / img.height;
     const cr = cw / ch;
     let dw, dh;
     if (ir > cr) {
-      dh = ch;
-      dw = ch * ir;
-    } else {
+      // image wider than canvas: scale to fit canvas WIDTH, leave bars top/bottom
       dw = cw;
       dh = cw / ir;
+    } else {
+      // image taller than canvas: scale to fit canvas HEIGHT, leave bars left/right
+      dh = ch;
+      dw = ch * ir;
     }
     const dx = (cw - dw) / 2;
     const dy = (ch - dh) / 2;
@@ -281,29 +348,45 @@ export class DoorScene {
     this.frameTexture.needsUpdate = true;
   }
 
-  // Master update: state is { doorAngle, lightIntensity, cameraZ, glowOpacity, particlePulse }
+  // State: { veilOpen (0..1), lightIntensity, cameraZ, cameraLift, glowOpacity, medallionPulse }
   update(state, dt) {
-    this.doorPivot.rotation.y = -state.doorAngle;          // negative = opens away from camera
-    this.warmLight.intensity = state.lightIntensity * 5.5;
-    this.rimLight.intensity = state.lightIntensity * 4;
+    // Veil splits apart by translating each half outward + rotating slightly + fading
+    const slide = state.veilOpen * 2.2;
+    this.veilLeftPivot.position.x = -ARCH_HALF_W - slide;
+    this.veilRightPivot.position.x = ARCH_HALF_W + slide;
+    this.veilLeft.material.opacity = 1 - state.veilOpen * 0.95;
+    this.veilRight.material.opacity = 1 - state.veilOpen * 0.95;
+    this.veilLeftPivot.rotation.z = state.veilOpen * 0.15;
+    this.veilRightPivot.rotation.z = -state.veilOpen * 0.15;
+
+    this.warmLight.intensity = state.lightIntensity * 7;
+
     this.camera.position.z = state.cameraZ;
     this.camera.position.y = 1.4 + state.cameraLift;
-    this.glowPlane.material.opacity = state.glowOpacity;
-    this.glowPlane.scale.setScalar(1 + state.glowOpacity * 0.6);
+    this.camera.lookAt(0, ARCH_PEAK_H / 2 - 0.3, 0);
 
-    // Particles drift slowly upward
+    this.glowPlane.material.opacity = state.glowOpacity;
+    this.glowPlane.scale.setScalar(1 + state.glowOpacity * 0.8);
+
+    // Medallion pulse — gentle breathing of emissiveness with light
+    this.medallion.material.emissiveIntensity = 0.55 + state.lightIntensity * 0.6 + Math.sin(performance.now() * 0.002) * 0.1;
+
+    // Filigree frame brightens with the warm light
+    this.filigreeFrame.material.emissiveIntensity = 0.35 + state.lightIntensity * 0.9;
+
+    // Particles drift up
     const positions = this.particles.geometry.attributes.position.array;
     for (let i = 0; i < this.particleVelocities.length; i++) {
       positions[i * 3 + 1] += this.particleVelocities[i] * (60 * (dt || 0.016));
-      if (positions[i * 3 + 1] > 4.5) {
-        positions[i * 3 + 1] = -0.2;
-        positions[i * 3 + 0] = (Math.random() - 0.5) * 6;
+      // Gentle horizontal sway
+      positions[i * 3 + 0] += Math.sin(performance.now() * 0.0006 + i) * 0.002;
+      if (positions[i * 3 + 1] > 5.5) {
+        positions[i * 3 + 1] = -0.5;
+        positions[i * 3 + 0] = (Math.random() - 0.5) * 8;
       }
     }
     this.particles.geometry.attributes.position.needsUpdate = true;
-
-    // Subtle particle brightness pulse with warm light
-    this.particles.material.opacity = 0.35 + state.lightIntensity * 0.4;
+    this.particles.material.opacity = 0.5 + state.lightIntensity * 0.4;
   }
 
   setSceneOpacity(o) {
