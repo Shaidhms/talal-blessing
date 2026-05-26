@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>For Talal · A Royal Blessing</title>
+  <title>For Talal</title>
   <meta name="description" content="A blessing and duaa for Talal — MashaAllah Tabarakallah." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -35,7 +35,7 @@
     <svg id="icon-unmuted" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
   </button>
 
-  <!-- BACKGROUND VIDEO (hidden until unlocked) -->
+  <!-- BACKGROUND VIDEO (covered by shutter panels initially) -->
   <div id="video-wrap">
     <video id="bg-video" loop muted playsinline preload="auto">
       <source src="talal-video.mp4" type="video/mp4" />
@@ -43,7 +43,23 @@
     <div id="video-vignette"></div>
   </div>
 
-  <!-- LOCKED ENTRY -->
+  <!-- 4 SHUTTER PANELS — one per screen quadrant -->
+  <div id="shutters">
+    <div class="shutter shutter-tl" data-quadrant="tl">
+      <div class="shutter-inner"></div>
+    </div>
+    <div class="shutter shutter-tr" data-quadrant="tr">
+      <div class="shutter-inner"></div>
+    </div>
+    <div class="shutter shutter-bl" data-quadrant="bl">
+      <div class="shutter-inner"></div>
+    </div>
+    <div class="shutter shutter-br" data-quadrant="br">
+      <div class="shutter-inner"></div>
+    </div>
+  </div>
+
+  <!-- COCKPIT canvas — 3D knobs overlay -->
   <div id="entry">
     <canvas id="key-canvas"></canvas>
     <canvas id="effects-canvas"></canvas>
@@ -54,18 +70,22 @@
         <div class="entry-name">TALAL</div>
       </div>
       <div class="entry-prompt">
-        <div class="entry-prompt-text">Drag the key into the keyhole</div>
+        <div class="entry-prompt-text">Turn each dial to begin</div>
+        <div class="entry-counter">
+          <span class="counter-pip" data-id="tl"></span>
+          <span class="counter-pip" data-id="tr"></span>
+          <span class="counter-pip" data-id="bl"></span>
+          <span class="counter-pip" data-id="br"></span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- MAIN STAGE — left column of auto-scrolling duaas over the video -->
+  <!-- MAIN STAGE -->
   <div id="main-stage">
     <div id="left-column">
       <div id="stream-viewport">
-        <div id="stream-track">
-          <!-- duaa cards injected by JS -->
-        </div>
+        <div id="stream-track"></div>
       </div>
     </div>
   </div>

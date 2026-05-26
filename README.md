@@ -1,4 +1,4 @@
-# For Talal — A Royal Blessing
+# For Talal
 
 A regal, interactive blessing page for my nephew Talal.
 

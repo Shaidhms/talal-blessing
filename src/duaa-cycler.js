@@ -56,7 +56,7 @@ export class DuaaStream {
       wrap.className = 'stream-track';
       wrap.dataset.key = key;
 
-      // Header (first block only)
+      // Header
       const header = document.createElement('section');
       header.className = 'stream-card stream-header';
       header.innerHTML = `
@@ -65,7 +65,6 @@ export class DuaaStream {
         </div>
         <div class="stream-eyebrow">For Our Beloved</div>
         <h1 class="stream-name">TALAL</h1>
-        <div class="stream-eyebrow stream-sub">A Royal Blessing</div>
       `;
       wrap.appendChild(header);
 
@@ -87,13 +86,7 @@ export class DuaaStream {
       closing.innerHTML = `
         <div class="stream-ameen-large">آمين</div>
         <div class="stream-divider"></div>
-        <div class="stream-closing-text">With love, from your uncle</div>
-        <div class="stream-closing-name">Shaid Hakkeem</div>
-        <div class="stream-closing-handles">
-          <a href="https://linkedin.com/in/shaidhms" target="_blank" rel="noopener">@shaidhms</a>
-          <span class="dot">·</span>
-          <a href="https://instagram.com/shaid.hakkeem" target="_blank" rel="noopener">@shaid.hakkeem</a>
-        </div>
+        <div class="stream-closing-name">From Uncle — Shaid</div>
       `;
       wrap.appendChild(closing);
 
