@@ -123,6 +123,28 @@
     <source src="assets/audio/nasheed.mp3" type="audio/mpeg" />
   </audio>
 
+  <script>
+    // JS fallback for the rotate-to-landscape prompt — runs immediately
+    // (CSS @media orientation can be flaky on some iOS Safari builds)
+    (function() {
+      function checkOrientation() {
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        var isPortrait = h > w;
+        var smallerSide = Math.min(w, h);
+        var b = document.body;
+        if (isPortrait && smallerSide < 900) {
+          b.classList.add('force-rotate');
+        } else {
+          b.classList.remove('force-rotate');
+        }
+      }
+      checkOrientation();
+      window.addEventListener('resize', checkOrientation);
+      window.addEventListener('orientationchange', checkOrientation);
+    })();
+  </script>
+
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

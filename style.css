@@ -821,10 +821,27 @@ body.unlocked #main-stage {
 }
 
 /* ========================================================================
-   ROTATE-TO-LANDSCAPE PROMPT — only on mobile portrait
+   ROTATE-TO-LANDSCAPE PROMPT — shown via media query OR JS class
    ======================================================================== */
 #rotate-prompt {
   display: none;
+}
+
+/* Visible whenever either trigger fires (JS class is the reliable path on iOS) */
+body.force-rotate #rotate-prompt {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background:
+    radial-gradient(ellipse at center, rgba(40, 26, 12, 0.55) 0%, var(--bg-deep) 75%);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.3rem;
+  color: var(--gold-bright);
+  text-align: center;
+  padding: 2rem;
 }
 
 @media (orientation: portrait) and (max-width: 900px) {
