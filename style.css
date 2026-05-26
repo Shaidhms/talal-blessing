@@ -40,9 +40,17 @@ body.unlocked #video-wrap { opacity: 1; }
 }
 #video-vignette {
   position: absolute; inset: 0;
+  /* Heavy dark gradient on the LEFT half so the duaa text reads cleanly.
+     Right half stays brighter so the video is the visible centerpiece. */
   background:
-    radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.55) 100%),
-    linear-gradient(to bottom, rgba(8,5,13,0.4) 0%, rgba(8,5,13,0.15) 40%, rgba(8,5,13,0.55) 100%);
+    linear-gradient(to right,
+      rgba(6,4,12,0.94) 0%,
+      rgba(6,4,12,0.85) 22%,
+      rgba(6,4,12,0.55) 38%,
+      rgba(6,4,12,0.18) 52%,
+      rgba(6,4,12,0.05) 65%,
+      rgba(6,4,12,0.0) 75%),
+    radial-gradient(ellipse at 70% 50%, transparent 30%, rgba(0,0,0,0.45) 100%);
   pointer-events: none;
 }
 
@@ -127,34 +135,41 @@ body.unlocked #entry {
 }
 
 /* ========================================================================
-   MAIN STAGE — full-page auto-scrolling duaa stream
+   MAIN STAGE — LEFT column of auto-scrolling duaas over the video
    ======================================================================== */
 #main-stage {
   position: fixed; inset: 0; z-index: 3;
   opacity: 0;
   transition: opacity 1.2s ease 0.6s;
   pointer-events: none;
-  overflow: hidden;
+  display: flex;
 }
 body.unlocked #main-stage {
   opacity: 1;
   pointer-events: auto;
 }
 
+#left-column {
+  position: relative;
+  width: 50vw;
+  height: 100vh;
+  max-width: 720px;
+  flex-shrink: 0;
+}
+
 #stream-viewport {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  /* Subtle top/bottom fade so cards enter and leave gracefully */
   mask-image: linear-gradient(to bottom,
     transparent 0%,
-    black 10%,
-    black 90%,
+    black 14%,
+    black 86%,
     transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom,
     transparent 0%,
-    black 10%,
-    black 90%,
+    black 14%,
+    black 86%,
     transparent 100%);
 }
 
@@ -166,51 +181,50 @@ body.unlocked #main-stage {
   will-change: transform;
 }
 
-.stream-track {
-  display: block;
-}
+.stream-track { display: block; }
 
-/* Each card fills the full viewport height */
+/* Cards: ~70vh each, left-aligned within the column */
 .stream-card {
-  min-height: 100vh;
-  padding: 8vh max(2rem, 8vw) 8vh;
+  min-height: 75vh;
+  padding: 5vh 3rem 5vh 5vw;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  text-align: center;
+  text-align: left;
   position: relative;
-  gap: 1.5rem;
+  gap: 1.2rem;
 }
 
-/* Header card (only at start) */
+/* Header card */
 .stream-header {
-  gap: 0.8rem;
+  gap: 0.6rem;
+  align-items: flex-start;
 }
 .stream-ornament-top {
-  display: flex; align-items: center; justify-content: center;
-  gap: 0.8rem;
-  margin-bottom: 1rem;
+  display: flex; align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.6rem;
 }
 .stream-eyebrow {
   font-family: 'Cinzel', serif;
   font-weight: 400;
-  letter-spacing: 0.45em;
-  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+  letter-spacing: 0.4em;
+  font-size: clamp(0.7rem, 1vw, 0.9rem);
   color: var(--gold-bright);
   text-transform: uppercase;
   text-shadow: 0 0 20px rgba(243, 210, 122, 0.5);
 }
 .stream-eyebrow.stream-sub {
-  font-size: clamp(0.65rem, 1vw, 0.8rem);
+  font-size: clamp(0.65rem, 0.9vw, 0.78rem);
   opacity: 0.75;
-  margin-top: 0.8rem;
+  margin-top: 0.6rem;
 }
 .stream-name {
   font-family: 'Cinzel', serif;
   font-weight: 900;
-  font-size: clamp(3.5rem, 11vw, 8rem);
-  letter-spacing: 0.22em;
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  letter-spacing: 0.18em;
   background: linear-gradient(180deg, #fff2c2 0%, #f3d27a 35%, #d4a857 75%, #a87b34 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -223,85 +237,86 @@ body.unlocked #main-stage {
 .stream-arabic {
   font-family: 'Amiri', serif;
   font-weight: 700;
-  font-size: clamp(2.4rem, 7vw, 5.5rem);
+  font-size: clamp(2rem, 4.5vw, 3.4rem);
   background: linear-gradient(180deg, #fff2c2 0%, #f3d27a 40%, #d4a857 80%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 30px rgba(243, 210, 122, 0.45));
+  filter: drop-shadow(0 0 28px rgba(243, 210, 122, 0.4));
   direction: rtl;
   line-height: 1.45;
-  max-width: 1100px;
-  text-shadow: 0 0 60px rgba(243, 210, 122, 0.25);
+  text-shadow: 0 0 40px rgba(243, 210, 122, 0.2);
+  width: 100%;
+  text-align: right;
 }
 .stream-translit {
   font-family: 'Cinzel', serif;
   font-weight: 400;
-  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
-  letter-spacing: 0.4em;
+  font-size: clamp(0.78rem, 1.1vw, 0.95rem);
+  letter-spacing: 0.35em;
   text-transform: uppercase;
   color: var(--warm-light);
   opacity: 0.85;
-  text-shadow: 0 0 16px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 0 14px rgba(0, 0, 0, 0.8);
 }
 .stream-divider {
-  width: 80px;
+  width: 60px;
   height: 1px;
-  background: linear-gradient(to right, transparent, var(--gold-bright), transparent);
+  background: linear-gradient(to right, var(--gold-bright), transparent);
   opacity: 0.75;
-  margin: 0.5rem 0;
+  margin: 0.4rem 0;
 }
 .stream-english {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
   font-weight: 400;
-  font-size: clamp(1.2rem, 2.5vw, 1.9rem);
-  line-height: 1.6;
+  font-size: clamp(1.05rem, 1.6vw, 1.4rem);
+  line-height: 1.55;
   color: var(--text-on-dark);
-  max-width: 900px;
-  text-shadow: 0 0 30px rgba(0, 0, 0, 0.85), 0 0 60px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 24px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 0, 0, 0.5);
   opacity: 0.95;
 }
 
 /* Closing card */
 .stream-closing {
-  gap: 1rem;
+  gap: 0.8rem;
+  align-items: flex-start;
 }
 .stream-ameen-large {
   font-family: 'Amiri', serif;
   font-weight: 700;
-  font-size: clamp(4rem, 14vw, 10rem);
+  font-size: clamp(3.5rem, 9vw, 7rem);
   background: linear-gradient(180deg, #fff2c2, #f3d27a, #d4a857);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 40px rgba(243, 210, 122, 0.5));
+  filter: drop-shadow(0 0 36px rgba(243, 210, 122, 0.5));
   direction: rtl;
   line-height: 1;
 }
 .stream-closing-text {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
-  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-size: clamp(0.9rem, 1.3vw, 1.1rem);
   color: var(--warm-light);
-  margin-top: 1rem;
-  text-shadow: 0 0 16px rgba(0, 0, 0, 0.8);
+  margin-top: 0.8rem;
+  text-shadow: 0 0 14px rgba(0, 0, 0, 0.8);
 }
 .stream-closing-name {
   font-family: 'Cinzel', serif;
   font-weight: 700;
-  font-size: clamp(1rem, 1.6vw, 1.3rem);
+  font-size: clamp(0.95rem, 1.4vw, 1.2rem);
   letter-spacing: 0.22em;
   color: var(--gold-bright);
-  text-shadow: 0 0 16px rgba(243, 210, 122, 0.5);
+  text-shadow: 0 0 14px rgba(243, 210, 122, 0.5);
 }
 .stream-closing-handles {
   font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: var(--gold);
-  display: flex; justify-content: center;
+  display: flex;
   gap: 0.5rem; flex-wrap: wrap;
-  margin-top: 0.6rem;
+  margin-top: 0.4rem;
 }
 .stream-closing-handles a {
   color: var(--gold);
@@ -310,6 +325,29 @@ body.unlocked #main-stage {
 }
 .stream-closing-handles a:hover { color: var(--gold-bright); }
 .stream-closing-handles .dot { opacity: 0.45; }
+
+/* Mobile — column takes full width, video sits behind */
+@media (max-width: 720px) {
+  #left-column {
+    width: 100vw;
+    max-width: none;
+  }
+  .stream-card {
+    padding: 5vh 2rem;
+    align-items: center;
+    text-align: center;
+  }
+  .stream-arabic { text-align: center; }
+  .stream-header, .stream-closing { align-items: center; }
+  #video-vignette {
+    background:
+      linear-gradient(to bottom,
+        rgba(6,4,12,0.85) 0%,
+        rgba(6,4,12,0.45) 30%,
+        rgba(6,4,12,0.45) 70%,
+        rgba(6,4,12,0.9) 100%);
+  }
+}
 
 /* Shared ornament styling */
 .orn-line {

@@ -23,7 +23,7 @@ async function boot() {
 
   const stream = new DuaaStream(
     document.getElementById('stream-track'),
-    { speed: 32 } // px/sec — about 30s per full duaa block
+    { speed: 95 } // px/sec — readable but doesn't drag
   );
 
   keyScene.setOnUnlock(() => {
