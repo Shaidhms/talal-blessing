@@ -11,15 +11,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:wght@300;400;500;700&family=Cinzel:wght@400;700;900&family=Inter:wght@300;500&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="style.css" />
-
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
-      }
-    }
-  </script>
 </head>
 <body class="locked">
 
@@ -35,34 +26,45 @@
     <svg id="icon-unmuted" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
   </button>
 
-  <!-- BACKGROUND VIDEO (covered by shutter panels initially) -->
+  <!-- BACKGROUND VIDEO (covered by shutters initially) -->
   <div id="video-wrap">
-    <video id="bg-video" loop muted playsinline preload="auto">
+    <video id="bg-video" muted playsinline preload="auto">
       <source src="talal-video.mp4" type="video/mp4" />
     </video>
     <div id="video-vignette"></div>
   </div>
 
-  <!-- 4 SHUTTER PANELS — one per screen quadrant -->
+  <!-- 4 SHUTTER PANELS - one per quadrant -->
   <div id="shutters">
-    <div class="shutter shutter-tl" data-quadrant="tl">
-      <div class="shutter-inner"></div>
-    </div>
-    <div class="shutter shutter-tr" data-quadrant="tr">
-      <div class="shutter-inner"></div>
-    </div>
-    <div class="shutter shutter-bl" data-quadrant="bl">
-      <div class="shutter-inner"></div>
-    </div>
-    <div class="shutter shutter-br" data-quadrant="br">
-      <div class="shutter-inner"></div>
-    </div>
+    <div class="shutter shutter-tl" data-quadrant="tl"><div class="shutter-inner"></div></div>
+    <div class="shutter shutter-tr" data-quadrant="tr"><div class="shutter-inner"></div></div>
+    <div class="shutter shutter-bl" data-quadrant="bl"><div class="shutter-inner"></div></div>
+    <div class="shutter shutter-br" data-quadrant="br"><div class="shutter-inner"></div></div>
   </div>
 
-  <!-- COCKPIT canvas — 3D knobs overlay -->
+  <!-- COCKPIT ENTRY -->
   <div id="entry">
-    <canvas id="key-canvas"></canvas>
+    <div id="cockpit-image"></div>
+    <div id="cockpit-overlay"></div>
     <canvas id="effects-canvas"></canvas>
+
+    <!-- 4 numbered hotspots — sequence: TR=1, TL=2, BL=3, BR=4 -->
+    <button class="cockpit-hotspot hotspot-tr" data-quadrant="tr" data-num="1" aria-label="Step 1">
+      <span class="hotspot-ring"></span>
+      <span class="hotspot-pulse"></span>
+    </button>
+    <button class="cockpit-hotspot hotspot-tl" data-quadrant="tl" data-num="2" aria-label="Step 2">
+      <span class="hotspot-ring"></span>
+      <span class="hotspot-pulse"></span>
+    </button>
+    <button class="cockpit-hotspot hotspot-bl" data-quadrant="bl" data-num="3" aria-label="Step 3">
+      <span class="hotspot-ring"></span>
+      <span class="hotspot-pulse"></span>
+    </button>
+    <button class="cockpit-hotspot hotspot-br" data-quadrant="br" data-num="4" aria-label="Step 4">
+      <span class="hotspot-ring"></span>
+      <span class="hotspot-pulse"></span>
+    </button>
 
     <div id="entry-text">
       <div class="entry-top">
@@ -70,7 +72,7 @@
         <div class="entry-name">TALAL</div>
       </div>
       <div class="entry-prompt">
-        <div class="entry-prompt-text">Turn each dial to begin</div>
+        <div class="entry-prompt-text">Touch each control to engage</div>
         <div class="entry-counter">
           <span class="counter-pip" data-id="tl"></span>
           <span class="counter-pip" data-id="tr"></span>
@@ -88,6 +90,13 @@
         <div id="stream-track"></div>
       </div>
     </div>
+  </div>
+
+  <!-- FREEZE-FRAME CARD: appears centered on the video's last frame -->
+  <div id="freeze-card">
+    <div class="freeze-ameen">آمين</div>
+    <div class="freeze-divider"></div>
+    <div class="freeze-name">With All Love — Shaid Mama</div>
   </div>
 
   <audio id="nasheed" loop preload="auto">

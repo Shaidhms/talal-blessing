@@ -4,11 +4,6 @@
 
 const DUAAS = [
   {
-    arabic: 'ما شاء الله تبارك الله',
-    translit: 'MashaAllah · Tabarakallah',
-    english: 'What Allah has willed has happened — and may He bless you abundantly.',
-  },
-  {
     arabic: 'بارك الله لك',
     translit: 'Barakallahu Lak',
     english: 'May Allah bless you in every step, in every breath, and in every choice ahead.',
@@ -33,24 +28,37 @@ const DUAAS = [
     translit: 'Allahumma-jʿalhu qurrata ʿayn',
     english: 'May Allah make him the coolness of his parents’ eyes — and a source of duaa for them in dunya and akhirah.',
   },
-  {
-    arabic: 'آمين',
-    translit: 'Ameen',
-    english: 'May Allah grant you a long, blessed, and righteous life. Ameen ya Rabb al-ʿalameen.',
-  },
 ];
 
 export class DuaaStream {
-  constructor(container, { speed = 35 } = {}) {
+  constructor(container, { speed = 35, onEnd = () => {}, holdAtEndMs = 0 } = {}) {
     this.container = container;
     this.speed = speed;          // px/sec
+    this.onEnd = onEnd;
+    this.holdAtEndMs = holdAtEndMs;
     this.started = false;
+    this.finished = false;
     this.y = 0;
     this._build();
   }
 
+  // Total scroll distance needed to push the last card off-screen
+  get scrollDistance() {
+    return Math.max(0, this.trackA.offsetHeight - window.innerHeight * 0.4);
+  }
+
+  setSpeed(speed) { this.speed = speed; }
+
+  reset() {
+    this.y = 0;
+    this.finished = false;
+    this.started = false;     // allow start() to re-enter the rAF loop
+    this.container.style.transition = 'none';
+    this.container.style.transform = `translate3d(0, 0, 0)`;
+  }
+
   _build() {
-    // Two copies of every duaa back-to-back, with header + footer surrounding.
+    // Single stack — plays through once and ends (no infinite loop)
     const buildBlock = (key) => {
       const wrap = document.createElement('div');
       wrap.className = 'stream-track';
@@ -80,28 +88,18 @@ export class DuaaStream {
         wrap.appendChild(card);
       });
 
-      // Closing card
-      const closing = document.createElement('section');
-      closing.className = 'stream-card stream-closing';
-      closing.innerHTML = `
-        <div class="stream-ameen-large">آمين</div>
-        <div class="stream-divider"></div>
-        <div class="stream-closing-name">From Uncle — Shaid</div>
-      `;
-      wrap.appendChild(closing);
-
       return wrap;
     };
 
+    // Just one stack — plays once and then ends
     this.trackA = buildBlock('a');
-    this.trackB = buildBlock('b');
     this.container.appendChild(this.trackA);
-    this.container.appendChild(this.trackB);
   }
 
   start() {
-    if (this.started) return;
+    if (this.started && !this.finished) return;
     this.started = true;
+    this.finished = false;
     this._last = performance.now();
     this._loop();
   }
@@ -111,15 +109,23 @@ export class DuaaStream {
   }
 
   _loop() {
-    if (!this.started) return;
+    if (!this.started || this.finished) return;
     const now = performance.now();
     const dt = (now - this._last) / 1000;
     this._last = now;
     this.y -= this.speed * dt;
-    // Loop when first copy fully scrolled past
     const blockHeight = this.trackA.offsetHeight;
-    if (Math.abs(this.y) >= blockHeight) {
-      this.y += blockHeight;  // jump back by exactly one block — seamless because B is identical
+    // End when the bottom of the track aligns with the bottom of the viewport
+    // — closing card is fully visible in the lower portion of the column
+    const endPoint = -(blockHeight - window.innerHeight);
+    if (this.y <= endPoint) {
+      this.y = endPoint;
+      this.container.style.transform = `translate3d(0, ${this.y}px, 0)`;
+      setTimeout(() => {
+        this.finished = true;
+        this.onEnd();
+      }, this.holdAtEndMs);
+      return;
     }
     this.container.style.transform = `translate3d(0, ${this.y}px, 0)`;
     requestAnimationFrame(() => this._loop());

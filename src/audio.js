@@ -54,4 +54,57 @@ export class AudioController {
       a.play().catch(() => {});
     } catch (e) {}
   }
+
+  // Pilot-style voice-over via the browser's speech synthesis engine
+  speak(text, opts = {}) {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      // Cancel any queued utterance so callouts feel snappy
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate   = opts.rate   ?? 0.95;
+      u.pitch  = opts.pitch  ?? 0.85;
+      u.volume = opts.volume ?? 0.9;
+      // Prefer a deeper male English voice when available
+      const voices = speechSynthesis.getVoices();
+      const preferred = voices.find(v =>
+        /en[-_]/i.test(v.lang) &&
+        /Daniel|Alex|Fred|David|Aaron|Tom|Google US English|Microsoft Mark|Male/i.test(v.name)
+      );
+      if (preferred) u.voice = preferred;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  // Synthesized "ding" — clean cockpit-confirmation chime via Web Audio API
+  playDing() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = this._sfxCtx || (this._sfxCtx = new Ctx());
+      // Resume if suspended (Safari/Chrome autoplay policies)
+      if (ctx.state === 'suspended') ctx.resume();
+      const now = ctx.currentTime;
+
+      // Bell-like chord: fundamental + octave above + slight detune for warmth
+      const freqs = [1318.5, 2637.0];   // E6 + E7 — bright cockpit chime
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0.0001, now);
+      masterGain.gain.exponentialRampToValueAtTime(0.32, now + 0.01);   // quick attack
+      masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);  // decay
+      masterGain.connect(ctx.destination);
+
+      freqs.forEach((f, i) => {
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now);
+        const partial = ctx.createGain();
+        partial.gain.value = i === 0 ? 1 : 0.35;
+        osc.connect(partial);
+        partial.connect(masterGain);
+        osc.start(now);
+        osc.stop(now + 0.8);
+      });
+    } catch (e) {}
+  }
 }

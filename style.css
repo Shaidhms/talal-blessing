@@ -52,6 +52,128 @@ body.unlocked #video-wrap { opacity: 1; }
       rgba(6,4,12,0.0) 75%),
     radial-gradient(ellipse at 70% 50%, transparent 30%, rgba(0,0,0,0.45) 100%);
   pointer-events: none;
+  opacity: 1;
+  transition: opacity 1.2s ease;
+}
+/* When the duaa stream completes (last duaa scrolled past),
+   fade out BOTH the gradient and the entire duaa column so the
+   video's final seconds play clean — no text anywhere. */
+body.final-shot #video-vignette {
+  opacity: 0;
+}
+body.final-shot #main-stage {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.9s ease, visibility 0s 0.9s;
+}
+
+/* ========================================================================
+   FREEZE-FRAME CARD — appears bottom-left (same area as duaa column)
+   when video reaches its last frame; only this text is visible.
+   ======================================================================== */
+#freeze-card {
+  position: fixed;
+  left: 4vw;
+  bottom: 6vh;
+  z-index: 5;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.9rem;
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(20px);
+  /* Fast fade OUT (used on loop restart) — no delay */
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+body.freeze-frame #freeze-card {
+  opacity: 1;
+  transform: translateY(0);
+  /* Slow fade IN with delay so duaa column finishes first */
+  transition: opacity 0.9s ease 0.5s, transform 0.9s ease 0.5s;
+}
+/* main-stage is already hidden by body.final-shot — no additional rule needed */
+
+@media (max-width: 720px) {
+  #freeze-card {
+    left: 50%;
+    bottom: 6vh;
+    transform: translateX(-50%) translateY(20px);
+    align-items: center;
+    text-align: center;
+    padding: 1.2rem 1.6rem;
+  }
+  body.freeze-frame #freeze-card {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+.freeze-ameen {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  font-size: clamp(2.4rem, 5.5vw, 4rem);   /* smaller so it doesn't fight video content */
+  background: linear-gradient(180deg, #fff2c2, #f3d27a, #d4a857);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter:
+    drop-shadow(0 0 24px rgba(243, 210, 122, 0.55))
+    drop-shadow(0 4px 14px rgba(0, 0, 0, 0.92))
+    drop-shadow(0 0 18px rgba(0, 0, 0, 0.7));
+  direction: rtl;
+  line-height: 1;
+}
+.freeze-divider {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-bright), transparent);
+  opacity: 0.8;
+  margin: 0.3rem 0;
+  box-shadow: 0 0 10px rgba(243, 210, 122, 0.45);
+}
+.freeze-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  font-size: clamp(0.85rem, 1.2vw, 1.05rem);
+  letter-spacing: 0.18em;
+  color: var(--gold-bright);
+  text-shadow:
+    0 0 10px rgba(243, 210, 122, 0.55),
+    0 2px 10px rgba(0, 0, 0, 0.95);
+  /* Banner only around this line — Arabic word stays clean */
+  position: relative;
+  padding: 0.7rem 1.4rem;
+  background: linear-gradient(180deg, rgba(10, 6, 16, 0.82), rgba(6, 4, 12, 0.92));
+  border-top: 1px solid rgba(243, 210, 122, 0.55);
+  border-bottom: 1px solid rgba(243, 210, 122, 0.55);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  box-shadow:
+    0 0 30px rgba(0, 0, 0, 0.5),
+    0 0 50px rgba(243, 210, 122, 0.08);
+}
+/* Decorative gold tick marks on the banner only */
+.freeze-name::before,
+.freeze-name::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--gold-bright);
+  box-shadow: 0 0 7px rgba(243, 210, 122, 0.7);
+}
+.freeze-name::before {
+  top: -5px;
+  left: -5px;
+  border-right: none;
+  border-bottom: none;
+}
+.freeze-name::after {
+  bottom: -5px;
+  right: -5px;
+  border-left: none;
+  border-top: none;
 }
 
 /* ========================================================================
@@ -117,37 +239,260 @@ body.unlocked #entry {
   opacity: 0;
   pointer-events: none;
 }
-#key-canvas {
+/* Cockpit photo background */
+#cockpit-image {
   position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  touch-action: none;
-  pointer-events: auto;
+  background-image: url('assets/images/cockpit-wide.jpg');
+  background-size: cover;
+  background-position: center center;
+  z-index: 5;
+}
+#cockpit-overlay {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 45%, transparent 35%, rgba(0,0,0,0.55) 100%),
+    linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.0) 30%, rgba(0,0,0,0.55) 100%);
   z-index: 6;
+  pointer-events: none;
+}
+
+/* Interactive hotspots overlaid on the cockpit image */
+.cockpit-hotspot {
+  position: absolute;
+  width: clamp(60px, 8vw, 110px);
+  height: clamp(60px, 8vw, 110px);
+  transform: translate(-50%, -50%);
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 8;
+  padding: 0;
+  outline: none;
+  pointer-events: auto;       /* override parent #entry's pointer-events:none */
+  -webkit-tap-highlight-color: transparent;
+}
+/* Position over visible cockpit features:
+   TL/TR: the two outer glass-cockpit displays
+   BL/BR: throttle-quadrant controls below */
+.hotspot-tl { left: 20%; top: 46%; }
+.hotspot-tr { left: 80%; top: 46%; }
+.hotspot-bl { left: 28%; top: 72%; }
+.hotspot-br { left: 72%; top: 72%; }
+
+@media (max-aspect-ratio: 1/1) {
+  .hotspot-tl { left: 22%; top: 44%; }
+  .hotspot-tr { left: 78%; top: 44%; }
+  .hotspot-bl { left: 28%; top: 70%; }
+  .hotspot-br { left: 72%; top: 70%; }
+}
+
+/* Ring that's always visible to mark interactivity */
+.hotspot-ring {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(243, 210, 122, 0.65);
+  box-shadow: 0 0 12px rgba(243, 210, 122, 0.4), inset 0 0 12px rgba(243, 210, 122, 0.2);
+  transition: all 0.3s;
+}
+/* Outer pulse ring drawing attention */
+.hotspot-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(243, 210, 122, 0.5);
+  animation: hotspot-pulse 2s ease-out infinite;
+}
+@keyframes hotspot-pulse {
+  0%   { transform: scale(0.85); opacity: 0.9; }
+  100% { transform: scale(1.6);  opacity: 0; }
+}
+
+/* Number label inside each hotspot (1, 2, 3, 4) */
+.cockpit-hotspot::before {
+  content: attr(data-num);
+  position: absolute;
+  inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(22px, 3.2vw, 36px);
+  color: var(--gold-bright);
+  text-shadow:
+    0 0 16px rgba(243, 210, 122, 0.95),
+    0 2px 6px rgba(0,0,0,0.95);
+  pointer-events: none;
+  transition: opacity 0.3s, color 0.3s;
+}
+
+.cockpit-hotspot:hover .hotspot-ring,
+.cockpit-hotspot:focus-visible .hotspot-ring {
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 24px rgba(243, 210, 122, 0.9), inset 0 0 24px rgba(243, 210, 122, 0.4);
+  transform: scale(1.1);
+}
+
+/* LOCKED — not yet your turn */
+.cockpit-hotspot.locked {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+.cockpit-hotspot.locked .hotspot-ring {
+  border-color: rgba(212, 168, 87, 0.25);
+  box-shadow: none;
+  opacity: 0.5;
+}
+.cockpit-hotspot.locked .hotspot-pulse {
+  animation: none;
+  opacity: 0;
+}
+.cockpit-hotspot.locked::before {
+  color: rgba(243, 210, 122, 0.35);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+}
+
+/* ENGAGED — already turned */
+.cockpit-hotspot.engaged {
+  cursor: default;
+  pointer-events: none;
+}
+.cockpit-hotspot.engaged .hotspot-ring {
+  border-color: #fff2c2;
+  background: radial-gradient(circle, rgba(243, 210, 122, 0.45) 0%, transparent 70%);
+  box-shadow: 0 0 32px rgba(243, 210, 122, 1), inset 0 0 16px rgba(243, 210, 122, 0.6);
+}
+.cockpit-hotspot.engaged .hotspot-pulse {
+  animation: none;
+  opacity: 0;
+}
+.cockpit-hotspot.engaged::before {
+  opacity: 0;          /* hide number when engaged */
+}
+.cockpit-hotspot.engaged::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(20px, 3vw, 32px);
+  color: var(--gold-bright);
+  text-shadow: 0 0 16px rgba(243, 210, 122, 0.9);
+}
+
+/* Callout popup — pops in next to a clicked hotspot, holds, then fades */
+.callout-popup {
+  position: fixed;
+  transform: translate(-50%, -50%) scale(0.85);
+  z-index: 11;
+  pointer-events: none;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: clamp(0.85rem, 1.4vw, 1.15rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  background: linear-gradient(180deg, rgba(18, 10, 26, 0.92), rgba(8, 5, 16, 0.95));
+  border: 1px solid rgba(243, 210, 122, 0.7);
+  padding: 0.85rem 1.6rem;
+  white-space: nowrap;
+  border-radius: 4px;
+  box-shadow:
+    0 0 36px rgba(243, 210, 122, 0.45),
+    0 8px 28px rgba(0, 0, 0, 0.75);
+  text-shadow: 0 0 12px rgba(243, 210, 122, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.18, 1.4, 0.4, 1);
+}
+.callout-popup.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+.callout-popup.hide {
+  opacity: 0;
+  transform: translate(-50%, -70%) scale(0.98);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+/* Small tick line connecting the popup to the source area */
+.callout-popup::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px; height: 10px;
+  background: inherit;
+  border-right: 1px solid rgba(243, 210, 122, 0.7);
+  border-bottom: 1px solid rgba(243, 210, 122, 0.7);
 }
 #effects-canvas {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   pointer-events: none;
-  z-index: 7;
+  z-index: 9;
 }
 
 #entry-text {
   position: absolute;
   inset: 0;
-  z-index: 8;
+  z-index: 10;
   pointer-events: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;          /* center the header vertically */
   padding: 4vh 2rem 5vh;
   text-align: center;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+}
+#entry-text .entry-prompt {
+  position: absolute;
+  bottom: 5vh;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .entry-top {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.4rem;
+  padding: 2.2rem clamp(2rem, 6vw, 4.5rem);
+  background: linear-gradient(180deg,
+    rgba(10, 6, 16, 0.78) 0%,
+    rgba(6, 4, 12, 0.92) 100%);
+  border-top: 1px solid rgba(243, 210, 122, 0.55);
+  border-bottom: 1px solid rgba(243, 210, 122, 0.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    0 0 60px rgba(0, 0, 0, 0.6),
+    0 0 90px rgba(243, 210, 122, 0.12),
+    inset 0 0 40px rgba(243, 210, 122, 0.06);
+  position: relative;
+}
+/* Decorative gold tick marks at the four corners */
+.entry-top::before,
+.entry-top::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--gold-bright);
+  box-shadow: 0 0 8px rgba(243, 210, 122, 0.7);
+}
+.entry-top::before {
+  top: -7px;
+  left: -7px;
+  border-right: none;
+  border-bottom: none;
+}
+.entry-top::after {
+  bottom: -7px;
+  right: -7px;
+  border-left: none;
+  border-top: none;
 }
 .entry-eyebrow {
   font-family: 'Cinzel', serif;
@@ -214,7 +559,8 @@ body.unlocked #entry {
 #main-stage {
   position: fixed; inset: 0; z-index: 3;
   opacity: 0;
-  transition: opacity 1.2s ease 0.6s;
+  /* Quick fade so loop restart feels snappy */
+  transition: opacity 0.5s ease;
   pointer-events: none;
   display: flex;
 }
@@ -257,10 +603,10 @@ body.unlocked #main-stage {
 
 .stream-track { display: block; }
 
-/* Cards: ~70vh each, left-aligned within the column */
+/* Each duaa card — compact enough that 7 fit comfortably in one video cycle */
 .stream-card {
-  min-height: 75vh;
-  padding: 5vh 3rem 5vh 5vw;
+  min-height: 60vh;
+  padding: 6vh 3rem 6vh 5vw;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -307,7 +653,7 @@ body.unlocked #main-stage {
   line-height: 1.1;
 }
 
-/* Duaa cards */
+/* Duaa cards — Arabic anchored LEFT in the column so it never overlaps the video */
 .stream-arabic {
   font-family: 'Amiri', serif;
   font-weight: 700;
@@ -317,11 +663,14 @@ body.unlocked #main-stage {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 0 28px rgba(243, 210, 122, 0.4));
+  /* Render Arabic right-to-left but anchor the BLOCK to the left of the column */
   direction: rtl;
-  line-height: 1.45;
+  unicode-bidi: isolate;
+  line-height: 1.5;
   text-shadow: 0 0 40px rgba(243, 210, 122, 0.2);
-  width: 100%;
-  text-align: right;
+  text-align: left;
+  display: inline-block;
+  max-width: 100%;
 }
 .stream-translit {
   font-family: 'Cinzel', serif;
@@ -364,7 +713,11 @@ body.unlocked #main-stage {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 36px rgba(243, 210, 122, 0.5));
+  /* Stack of shadows so the closing card reads even when the gradient is gone */
+  filter:
+    drop-shadow(0 0 36px rgba(243, 210, 122, 0.5))
+    drop-shadow(0 4px 16px rgba(0, 0, 0, 0.95))
+    drop-shadow(0 0 24px rgba(0, 0, 0, 0.7));
   direction: rtl;
   line-height: 1;
 }
@@ -379,10 +732,14 @@ body.unlocked #main-stage {
 .stream-closing-name {
   font-family: 'Cinzel', serif;
   font-weight: 700;
-  font-size: clamp(0.95rem, 1.4vw, 1.2rem);
-  letter-spacing: 0.22em;
+  font-size: clamp(1.1rem, 1.7vw, 1.5rem);
+  letter-spacing: 0.24em;
   color: var(--gold-bright);
-  text-shadow: 0 0 14px rgba(243, 210, 122, 0.5);
+  /* Strong dark halo so the name reads on top of any video frame */
+  text-shadow:
+    0 0 12px rgba(243, 210, 122, 0.55),
+    0 3px 14px rgba(0, 0, 0, 0.95),
+    0 0 28px rgba(0, 0, 0, 0.75);
 }
 .stream-closing-handles {
   font-family: 'Inter', sans-serif;
