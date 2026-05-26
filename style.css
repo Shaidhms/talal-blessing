@@ -827,8 +827,14 @@ body.unlocked #main-stage {
   display: none;
 }
 
+/* Once the experience is unlocked, the rotate prompt is permanently hidden
+   no matter what orientation the user is in. */
+body.unlocked #rotate-prompt {
+  display: none !important;
+}
+
 /* Visible whenever either trigger fires (JS class is the reliable path on iOS) */
-body.force-rotate #rotate-prompt {
+body.force-rotate:not(.unlocked) #rotate-prompt {
   display: flex;
   position: fixed;
   inset: 0;

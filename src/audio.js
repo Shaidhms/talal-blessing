@@ -55,23 +55,24 @@ export class AudioController {
     } catch (e) {}
   }
 
-  // Pilot-style voice-over via the browser's speech synthesis engine
+  // Pilot-style voice-over via the browser's speech synthesis engine.
+  // NOTE: Must be invoked DIRECTLY inside a user-gesture handler (click/touch)
+  // for iOS Safari to actually emit audio. No setTimeout, no async hop.
   speak(text, opts = {}) {
     if (!('speechSynthesis' in window)) return;
     try {
-      // Cancel any queued utterance so callouts feel snappy
-      speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.rate   = opts.rate   ?? 0.95;
       u.pitch  = opts.pitch  ?? 0.85;
-      u.volume = opts.volume ?? 0.9;
-      // Prefer a deeper male English voice when available
+      u.volume = opts.volume ?? 1.0;
       const voices = speechSynthesis.getVoices();
       const preferred = voices.find(v =>
         /en[-_]/i.test(v.lang) &&
-        /Daniel|Alex|Fred|David|Aaron|Tom|Google US English|Microsoft Mark|Male/i.test(v.name)
+        /Daniel|Alex|Fred|David|Aaron|Tom|Samantha|Karen|Moira|Google|Male/i.test(v.name)
       );
       if (preferred) u.voice = preferred;
+      // iOS sometimes needs the engine resumed before speaking
+      if (speechSynthesis.paused) speechSynthesis.resume();
       speechSynthesis.speak(u);
     } catch (e) {}
   }

@@ -138,9 +138,10 @@ async function boot() {
     activated.add(id);
     currentStep++;
 
+    // Voice-over FIRST — iOS Safari requires speech to be initiated
+    // synchronously inside the user-gesture handler (no setTimeout)
+    audio.speak(CALLOUTS[id]);
     audio.playDing();
-    // Speak the cockpit callout a beat after the ding so they don't clash
-    setTimeout(() => audio.speak(CALLOUTS[id]), 220);
 
     // Visual popup with the same callout — anchored above the clicked control
     showCalloutPopup(CALLOUTS[id], id);
@@ -190,7 +191,9 @@ async function boot() {
 
     setTimeout(() => {
       document.body.classList.remove('locked');
+      document.body.classList.remove('force-rotate');     // safety net for rotate prompt
       document.body.classList.add('unlocked');
+      if (typeof window.__hideRotatePrompt === 'function') window.__hideRotatePrompt();
       // Start the video from frame 0 in sync with the duaa stream
       video.currentTime = 0;
       video.play().catch(() => {});

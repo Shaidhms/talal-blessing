@@ -124,24 +124,41 @@
   </audio>
 
   <script>
-    // JS fallback for the rotate-to-landscape prompt — runs immediately
-    // (CSS @media orientation can be flaky on some iOS Safari builds)
+    // JS-side rotate prompt check — uses matchMedia (more reliable on iOS Safari)
     (function() {
+      var portraitMQ = window.matchMedia && window.matchMedia('(orientation: portrait)');
+      var smallMQ    = window.matchMedia && window.matchMedia('(max-width: 900px)');
+
       function checkOrientation() {
+        // If the user has already unlocked the cockpit, never show the prompt again
+        if (document.body.classList.contains('unlocked')) {
+          document.body.classList.remove('force-rotate');
+          return;
+        }
         var w = window.innerWidth;
         var h = window.innerHeight;
-        var isPortrait = h > w;
-        var smallerSide = Math.min(w, h);
-        var b = document.body;
-        if (isPortrait && smallerSide < 900) {
-          b.classList.add('force-rotate');
+        var isPortrait = portraitMQ ? portraitMQ.matches : (h > w);
+        var isSmall    = smallMQ    ? smallMQ.matches    : (Math.min(w, h) < 900);
+        if (isPortrait && isSmall) {
+          document.body.classList.add('force-rotate');
         } else {
-          b.classList.remove('force-rotate');
+          document.body.classList.remove('force-rotate');
         }
       }
       checkOrientation();
       window.addEventListener('resize', checkOrientation);
       window.addEventListener('orientationchange', checkOrientation);
+      if (portraitMQ && portraitMQ.addEventListener) {
+        portraitMQ.addEventListener('change', checkOrientation);
+      }
+      // Re-check shortly after page load (iOS Safari sometimes reports wrong
+      // dimensions before the address bar settles)
+      setTimeout(checkOrientation, 300);
+      setTimeout(checkOrientation, 1500);
+      // Expose for the module to call after unlock
+      window.__hideRotatePrompt = function() {
+        document.body.classList.remove('force-rotate');
+      };
     })();
   </script>
 
