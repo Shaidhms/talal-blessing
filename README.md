@@ -9,17 +9,18 @@ A regal, interactive blessing page for my nephew Talal.
 
 ## How it works
 
-When you open the page, you see a **closed entry**: a slowly rotating golden 3D key floating in dark warm light, beneath "TALAL" in royal gold. A small prompt reads *"Turn the key to enter."*
+When you open the page, you see a **locked entry**: an ornate gold keyhole plate centered, with a 3D gold key floating just below it. The prompt reads *"Drag the key into the keyhole."*
 
-**Click the key.** It spins, lifts off, and dissolves — fireworks burst and confetti rains.
+**Drag the key upward into the keyhole.** Get close enough and it snaps in, rotates 90° (the lock turn), lifts off, dissolves — fireworks burst and confetti rains.
 
 Then the experience opens:
 
 - 🎬 **Background:** the full-screen video of Talal plays on loop with a soft vignette
-- ✨ **Left panel:** an ornate gold-cornered frame with cycling duaas
-  - Each duaa shows Arabic, transliteration, and an English translation
-  - Auto-cycles every ~5.5 seconds with a fade transition
-  - Pagination dots — click any to jump to that duaa
+- ✨ **Foreground:** a full-page auto-scrolling stream of duaas
+  - Header card with "FOR OUR BELOVED · TALAL"
+  - 7 duaas — each one takes the full viewport
+  - Auto-scrolls continuously upward (looping seamlessly)
+  - Closing card with "آمين" and the family footer
 - 🎵 **Mute toggle** top-right for the nasheed
 
 ### Duaas included

@@ -1,4 +1,6 @@
-// Cycles through duaa cards on the left panel — one at a time, auto-fade.
+// Full-page auto-scrolling duaa stream. Renders all duaas stacked vertically,
+// each filling the viewport, and continuously scrolls upward. A duplicate stack
+// is appended so the scroll loops seamlessly.
 
 const DUAAS = [
   {
@@ -38,71 +40,95 @@ const DUAAS = [
   },
 ];
 
-export class DuaaCycler {
-  constructor(stage, dotsContainer, { intervalMs = 5500 } = {}) {
-    this.stage = stage;
-    this.dotsContainer = dotsContainer;
-    this.intervalMs = intervalMs;
-    this.idx = 0;
-    this.timer = null;
-    this.cards = [];
-    this.dots = [];
-
+export class DuaaStream {
+  constructor(container, { speed = 35 } = {}) {
+    this.container = container;
+    this.speed = speed;          // px/sec
+    this.started = false;
+    this.y = 0;
     this._build();
   }
 
   _build() {
-    // Build a card per duaa, all stacked absolutely
-    DUAAS.forEach((d, i) => {
-      const card = document.createElement('div');
-      card.className = 'duaa-card';
-      card.innerHTML = `
-        <div class="duaa-arabic">${d.arabic}</div>
-        <div class="duaa-translit">${d.translit}</div>
-        <div class="duaa-divider"></div>
-        <div class="duaa-english">${d.english}</div>
+    // Two copies of every duaa back-to-back, with header + footer surrounding.
+    const buildBlock = (key) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'stream-track';
+      wrap.dataset.key = key;
+
+      // Header (first block only)
+      const header = document.createElement('section');
+      header.className = 'stream-card stream-header';
+      header.innerHTML = `
+        <div class="stream-ornament-top">
+          <span class="orn-line"></span><span class="orn-diamond">✦</span><span class="orn-line"></span>
+        </div>
+        <div class="stream-eyebrow">For Our Beloved</div>
+        <h1 class="stream-name">TALAL</h1>
+        <div class="stream-eyebrow stream-sub">A Royal Blessing</div>
       `;
-      this.stage.appendChild(card);
-      this.cards.push(card);
+      wrap.appendChild(header);
 
-      const dot = document.createElement('button');
-      dot.className = 'panel-dot';
-      dot.setAttribute('aria-label', `Duaa ${i + 1}`);
-      dot.addEventListener('click', () => this.show(i, true));
-      this.dotsContainer.appendChild(dot);
-      this.dots.push(dot);
-    });
+      DUAAS.forEach((d) => {
+        const card = document.createElement('section');
+        card.className = 'stream-card';
+        card.innerHTML = `
+          <div class="stream-arabic">${d.arabic}</div>
+          <div class="stream-translit">${d.translit}</div>
+          <div class="stream-divider"></div>
+          <div class="stream-english">${d.english}</div>
+        `;
+        wrap.appendChild(card);
+      });
 
-    this.show(0, false);
+      // Closing card
+      const closing = document.createElement('section');
+      closing.className = 'stream-card stream-closing';
+      closing.innerHTML = `
+        <div class="stream-ameen-large">آمين</div>
+        <div class="stream-divider"></div>
+        <div class="stream-closing-text">With love, from your uncle</div>
+        <div class="stream-closing-name">Shaid Hakkeem</div>
+        <div class="stream-closing-handles">
+          <a href="https://linkedin.com/in/shaidhms" target="_blank" rel="noopener">@shaidhms</a>
+          <span class="dot">·</span>
+          <a href="https://instagram.com/shaid.hakkeem" target="_blank" rel="noopener">@shaid.hakkeem</a>
+        </div>
+      `;
+      wrap.appendChild(closing);
+
+      return wrap;
+    };
+
+    this.trackA = buildBlock('a');
+    this.trackB = buildBlock('b');
+    this.container.appendChild(this.trackA);
+    this.container.appendChild(this.trackB);
   }
 
   start() {
-    this._scheduleNext();
+    if (this.started) return;
+    this.started = true;
+    this._last = performance.now();
+    this._loop();
   }
 
   pause() {
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
+    this.started = false;
+  }
+
+  _loop() {
+    if (!this.started) return;
+    const now = performance.now();
+    const dt = (now - this._last) / 1000;
+    this._last = now;
+    this.y -= this.speed * dt;
+    // Loop when first copy fully scrolled past
+    const blockHeight = this.trackA.offsetHeight;
+    if (Math.abs(this.y) >= blockHeight) {
+      this.y += blockHeight;  // jump back by exactly one block — seamless because B is identical
     }
-  }
-
-  _scheduleNext() {
-    if (this.timer) clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
-      const next = (this.idx + 1) % this.cards.length;
-      this.show(next, true);
-    }, this.intervalMs);
-  }
-
-  show(i, schedule) {
-    this.idx = i;
-    this.cards.forEach((c, ci) => {
-      c.classList.toggle('active', ci === i);
-    });
-    this.dots.forEach((d, di) => {
-      d.classList.toggle('active', di === i);
-    });
-    if (schedule) this._scheduleNext();
+    this.container.style.transform = `translate3d(0, ${this.y}px, 0)`;
+    requestAnimationFrame(() => this._loop());
   }
 }

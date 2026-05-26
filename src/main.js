@@ -1,19 +1,16 @@
 import { KeyScene } from './key-scene.js';
-import { DuaaCycler } from './duaa-cycler.js';
+import { DuaaStream } from './duaa-cycler.js';
 import { EffectsLayer } from './effects.js';
 import { AudioController } from './audio.js';
 
 async function boot() {
   const loaderEl = document.getElementById('loader');
 
-  // ----- 3D key (entry) -----
   const keyCanvas = document.getElementById('key-canvas');
   const keyScene = new KeyScene(keyCanvas);
 
-  // ----- Effects (sparkles, fireworks, confetti, cursor trail) -----
   const effects = new EffectsLayer(document.getElementById('effects-canvas'));
 
-  // ----- Audio (nasheed + creak SFX) -----
   const audio = new AudioController({
     nasheedEl: document.getElementById('nasheed'),
     toggleEl: document.getElementById('audio-toggle'),
@@ -21,23 +18,16 @@ async function boot() {
     iconUnmuted: document.getElementById('icon-unmuted'),
   });
 
-  // ----- Background video element -----
   const video = document.getElementById('bg-video');
-  // Try to start muted so we can play once unlocked
   video.muted = true;
 
-  // ----- Duaa cycler (left panel) -----
-  const duaa = new DuaaCycler(
-    document.getElementById('duaa-stage'),
-    document.getElementById('panel-dots'),
-    { intervalMs: 5500 }
+  const stream = new DuaaStream(
+    document.getElementById('stream-track'),
+    { speed: 32 } // px/sec — about 30s per full duaa block
   );
 
-  // ----- Wire key click → unlock transition -----
   keyScene.setOnUnlock(() => {
     audio.playCreak();
-
-    // Burst of fireworks from where the key was
     const dpr = Math.min(window.devicePixelRatio, 2);
     const cx = (window.innerWidth / 2) * dpr;
     const cy = (window.innerHeight / 2) * dpr;
@@ -48,19 +38,16 @@ async function boot() {
     setTimeout(() => effects.setAutoFireworks(true), 200);
     setTimeout(() => effects.setAutoFireworks(false), 3500);
 
-    // After the key flies off, transition to main view
     setTimeout(() => {
       document.body.classList.remove('locked');
       document.body.classList.add('unlocked');
-      video.play().catch(() => {});  // start the background loop
-      duaa.start();
-    }, 700);
+      video.play().catch(() => {});
+      stream.start();
+    }, 900);
 
-    // Eventually hide the key canvas
-    setTimeout(() => keyScene.hide(), 1800);
+    setTimeout(() => keyScene.hide(), 2200);
   });
 
-  // ----- Render loop -----
   let last = performance.now();
   const tick = (now) => {
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -73,7 +60,6 @@ async function boot() {
   };
   requestAnimationFrame(tick);
 
-  // ----- Loader dismiss -----
   setTimeout(() => loaderEl.classList.add('gone'), 500);
 }
 

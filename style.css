@@ -41,36 +41,21 @@ body.unlocked #video-wrap { opacity: 1; }
 #video-vignette {
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%),
-    linear-gradient(to bottom, transparent 0%, rgba(8,5,13,0.35) 100%);
-  pointer-events: none;
-}
-/* Soft dark gradient on the left so the duaa panel reads cleanly over video */
-#video-left-fade {
-  position: absolute; inset: 0;
-  background: linear-gradient(to right,
-    rgba(6,4,12,0.92) 0%,
-    rgba(6,4,12,0.78) 20%,
-    rgba(6,4,12,0.45) 38%,
-    rgba(6,4,12,0.15) 52%,
-    rgba(6,4,12,0) 70%);
+    radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.55) 100%),
+    linear-gradient(to bottom, rgba(8,5,13,0.4) 0%, rgba(8,5,13,0.15) 40%, rgba(8,5,13,0.55) 100%);
   pointer-events: none;
 }
 
 /* ========================================================================
-   LOCKED ENTRY  (3D key + entry text)
+   LOCKED ENTRY
    ======================================================================== */
 #entry {
   position: fixed; inset: 0; z-index: 5;
   background:
-    radial-gradient(ellipse at 50% 45%, rgba(80, 50, 20, 0.35) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 45%, rgba(80, 50, 20, 0.32) 0%, transparent 60%),
     radial-gradient(ellipse at 50% 80%, rgba(60, 30, 10, 0.4) 0%, transparent 60%),
     var(--bg-deep);
   transition: opacity 0.8s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
 body.unlocked #entry {
   opacity: 0;
@@ -79,6 +64,7 @@ body.unlocked #entry {
 #key-canvas {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
+  touch-action: none;
 }
 #effects-canvas {
   position: absolute; inset: 0;
@@ -96,14 +82,20 @@ body.unlocked #entry {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 8vh 2rem;
+  padding: 3vh 2rem 4vh;
   text-align: center;
+}
+.entry-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
 }
 .entry-eyebrow {
   font-family: 'Cinzel', serif;
   font-weight: 400;
   letter-spacing: 0.45em;
-  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+  font-size: clamp(0.65rem, 1.1vw, 0.9rem);
   color: var(--gold-bright);
   text-shadow: 0 0 20px rgba(243, 210, 122, 0.6);
   text-transform: uppercase;
@@ -111,9 +103,8 @@ body.unlocked #entry {
 .entry-name {
   font-family: 'Cinzel', serif;
   font-weight: 900;
-  font-size: clamp(2.4rem, 6.5vw, 5rem);
-  letter-spacing: 0.22em;
-  margin-top: 0.6rem;
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  letter-spacing: 0.32em;
   background: linear-gradient(180deg, #fff2c2 0%, #f3d27a 35%, #d4a857 75%, #a87b34 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -123,255 +114,214 @@ body.unlocked #entry {
 .entry-prompt {
   font-family: 'Cinzel', serif;
   font-weight: 400;
-  letter-spacing: 0.35em;
-  font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+  letter-spacing: 0.32em;
+  font-size: clamp(0.7rem, 1.1vw, 0.9rem);
   color: var(--gold-bright);
   text-transform: uppercase;
   text-shadow: 0 0 20px rgba(243, 210, 122, 0.5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
+  animation: prompt-pulse 2.4s ease-in-out infinite;
 }
-.entry-arrow {
-  font-size: 1.6rem;
-  animation: arrow-up 1.6s ease-in-out infinite;
-  letter-spacing: 0;
-}
-@keyframes arrow-up {
-  0%, 100% { transform: translateY(0); opacity: 0.55; }
-  50% { transform: translateY(-6px); opacity: 1; }
+@keyframes prompt-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }
 
 /* ========================================================================
-   MAIN STAGE (after entry)  — left duaa panel over video background
+   MAIN STAGE — full-page auto-scrolling duaa stream
    ======================================================================== */
 #main-stage {
   position: fixed; inset: 0; z-index: 3;
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 1.2s ease 0.6s, transform 1.2s ease 0.6s;
+  transition: opacity 1.2s ease 0.6s;
   pointer-events: none;
-  display: flex;
-  align-items: center;
+  overflow: hidden;
 }
 body.unlocked #main-stage {
   opacity: 1;
-  transform: translateY(0);
   pointer-events: auto;
 }
 
-#duaa-panel {
-  width: min(440px, 92vw);
-  margin-left: clamp(1rem, 4vw, 4rem);
-  padding: clamp(1.5rem, 3vw, 2.5rem);
-  position: relative;
-}
-
-.panel-frame {
-  position: relative;
-  padding: clamp(1.8rem, 3vw, 2.8rem) clamp(1.5rem, 3vw, 2.4rem);
-  border: 1px solid rgba(212, 168, 87, 0.35);
-  border-radius: 4px;
-  background:
-    linear-gradient(180deg, rgba(20, 12, 32, 0.65) 0%, rgba(8, 5, 13, 0.78) 100%);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  box-shadow:
-    0 0 80px rgba(212, 168, 87, 0.12),
-    inset 0 0 60px rgba(212, 168, 87, 0.04);
-}
-
-/* Decorative gold corners */
-.panel-corner {
+#stream-viewport {
   position: absolute;
-  width: 28px; height: 28px;
-  border: 1.5px solid var(--gold-bright);
-  pointer-events: none;
+  inset: 0;
+  overflow: hidden;
+  /* Subtle top/bottom fade so cards enter and leave gracefully */
+  mask-image: linear-gradient(to bottom,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%);
 }
-.panel-corner.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
-.panel-corner.tr { top: -1px; right: -1px; border-left: none; border-bottom: none; }
-.panel-corner.bl { bottom: -1px; left: -1px; border-right: none; border-top: none; }
-.panel-corner.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
-.panel-corner::before,
-.panel-corner::after {
-  content: '';
-  position: absolute;
-  background: var(--gold-bright);
-  box-shadow: 0 0 8px rgba(243, 210, 122, 0.6);
-}
-.panel-corner.tl::before, .panel-corner.tr::before { top: -4px; width: 8px; height: 8px; border-radius: 50%; }
-.panel-corner.tl::before { left: -4px; }
-.panel-corner.tr::before { right: -4px; }
-.panel-corner.bl::before, .panel-corner.br::before { bottom: -4px; width: 8px; height: 8px; border-radius: 50%; }
-.panel-corner.bl::before { left: -4px; }
-.panel-corner.br::before { right: -4px; }
 
-/* Panel header */
-.panel-header { text-align: center; margin-bottom: 1.5rem; }
-.panel-eyebrow {
+#stream-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  will-change: transform;
+}
+
+.stream-track {
+  display: block;
+}
+
+/* Each card fills the full viewport height */
+.stream-card {
+  min-height: 100vh;
+  padding: 8vh max(2rem, 8vw) 8vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  gap: 1.5rem;
+}
+
+/* Header card (only at start) */
+.stream-header {
+  gap: 0.8rem;
+}
+.stream-ornament-top {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+.stream-eyebrow {
   font-family: 'Cinzel', serif;
   font-weight: 400;
-  letter-spacing: 0.4em;
-  font-size: 0.7rem;
+  letter-spacing: 0.45em;
+  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
   color: var(--gold-bright);
   text-transform: uppercase;
-  opacity: 0.85;
-  margin-bottom: 0.5rem;
+  text-shadow: 0 0 20px rgba(243, 210, 122, 0.5);
 }
-.panel-name {
+.stream-eyebrow.stream-sub {
+  font-size: clamp(0.65rem, 1vw, 0.8rem);
+  opacity: 0.75;
+  margin-top: 0.8rem;
+}
+.stream-name {
   font-family: 'Cinzel', serif;
   font-weight: 900;
-  font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+  font-size: clamp(3.5rem, 11vw, 8rem);
   letter-spacing: 0.22em;
+  background: linear-gradient(180deg, #fff2c2 0%, #f3d27a 35%, #d4a857 75%, #a87b34 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 32px rgba(243, 210, 122, 0.4));
+  line-height: 1.1;
+}
+
+/* Duaa cards */
+.stream-arabic {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  font-size: clamp(2.4rem, 7vw, 5.5rem);
   background: linear-gradient(180deg, #fff2c2 0%, #f3d27a 40%, #d4a857 80%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 16px rgba(243, 210, 122, 0.4));
-  margin-bottom: 0.8rem;
+  filter: drop-shadow(0 0 30px rgba(243, 210, 122, 0.45));
+  direction: rtl;
+  line-height: 1.45;
+  max-width: 1100px;
+  text-shadow: 0 0 60px rgba(243, 210, 122, 0.25);
 }
-.panel-ornament {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.7rem;
+.stream-translit {
+  font-family: 'Cinzel', serif;
+  font-weight: 400;
+  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--warm-light);
+  opacity: 0.85;
+  text-shadow: 0 0 16px rgba(0, 0, 0, 0.8);
 }
+.stream-divider {
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-bright), transparent);
+  opacity: 0.75;
+  margin: 0.5rem 0;
+}
+.stream-english {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.2rem, 2.5vw, 1.9rem);
+  line-height: 1.6;
+  color: var(--text-on-dark);
+  max-width: 900px;
+  text-shadow: 0 0 30px rgba(0, 0, 0, 0.85), 0 0 60px rgba(0, 0, 0, 0.5);
+  opacity: 0.95;
+}
+
+/* Closing card */
+.stream-closing {
+  gap: 1rem;
+}
+.stream-ameen-large {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  font-size: clamp(4rem, 14vw, 10rem);
+  background: linear-gradient(180deg, #fff2c2, #f3d27a, #d4a857);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 40px rgba(243, 210, 122, 0.5));
+  direction: rtl;
+  line-height: 1;
+}
+.stream-closing-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  color: var(--warm-light);
+  margin-top: 1rem;
+  text-shadow: 0 0 16px rgba(0, 0, 0, 0.8);
+}
+.stream-closing-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: clamp(1rem, 1.6vw, 1.3rem);
+  letter-spacing: 0.22em;
+  color: var(--gold-bright);
+  text-shadow: 0 0 16px rgba(243, 210, 122, 0.5);
+}
+.stream-closing-handles {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: var(--gold);
+  display: flex; justify-content: center;
+  gap: 0.5rem; flex-wrap: wrap;
+  margin-top: 0.6rem;
+}
+.stream-closing-handles a {
+  color: var(--gold);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.stream-closing-handles a:hover { color: var(--gold-bright); }
+.stream-closing-handles .dot { opacity: 0.45; }
+
+/* Shared ornament styling */
 .orn-line {
-  width: 50px;
+  width: 60px;
   height: 1px;
   background: linear-gradient(to right, transparent, var(--gold-bright), transparent);
 }
 .orn-diamond {
   color: var(--gold-bright);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   text-shadow: 0 0 10px rgba(243, 210, 122, 0.8);
 }
-
-/* Duaa stage */
-.panel-duaa-stage {
-  position: relative;
-  min-height: 220px;
-  margin: 1.2rem 0 1.4rem;
-}
-.duaa-card {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0.7rem;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.9s ease, transform 0.9s ease;
-  pointer-events: none;
-}
-.duaa-card.active {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-.duaa-arabic {
-  font-family: 'Amiri', serif;
-  font-weight: 700;
-  font-size: clamp(1.6rem, 4vw, 2.4rem);
-  background: linear-gradient(180deg, #fff2c2, #f3d27a, #d4a857);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 18px rgba(243, 210, 122, 0.4));
-  direction: rtl;
-  line-height: 1.4;
-}
-.duaa-translit {
-  font-family: 'Cinzel', serif;
-  font-size: 0.7rem;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--warm-light);
-  opacity: 0.85;
-}
-.duaa-divider {
-  width: 40px;
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--gold), transparent);
-  opacity: 0.7;
-  margin: 0.3rem 0;
-}
-.duaa-english {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-style: italic;
-  font-size: clamp(1rem, 1.6vw, 1.15rem);
-  line-height: 1.6;
-  color: var(--text-on-dark);
-  opacity: 0.95;
-}
-
-/* Pagination dots */
-.panel-dots {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin: 0.5rem 0 1.2rem;
-}
-.panel-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  border: 1px solid rgba(212, 168, 87, 0.5);
-  background: transparent;
-  cursor: pointer;
-  padding: 0;
-  transition: all 0.3s;
-}
-.panel-dot.active {
-  background: var(--gold-bright);
-  border-color: var(--gold-bright);
-  box-shadow: 0 0 8px rgba(243, 210, 122, 0.7);
-  transform: scale(1.2);
-}
-.panel-dot:hover { border-color: var(--gold-bright); }
-
-/* Panel footer */
-.panel-footer {
-  text-align: center;
-  border-top: 1px solid rgba(212, 168, 87, 0.18);
-  padding-top: 1rem;
-  margin-top: 0.5rem;
-}
-.panel-footer .panel-ornament { margin-bottom: 0.7rem; }
-.panel-footer-line {
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-size: 0.95rem;
-  color: var(--warm-light);
-  opacity: 0.9;
-}
-.panel-footer-name {
-  font-family: 'Cinzel', serif;
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.18em;
-  color: var(--gold-bright);
-  margin: 0.3rem 0 0.5rem;
-}
-.panel-footer-handles {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.72rem;
-  color: var(--gold);
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-.panel-footer-handles a {
-  color: var(--gold);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.panel-footer-handles a:hover { color: var(--gold-bright); }
-.panel-footer-handles .dot { opacity: 0.45; }
 
 /* ========================================================================
    AUDIO TOGGLE
@@ -432,29 +382,4 @@ body.unlocked #main-stage {
 @keyframes dotpulse {
   0%, 60%, 100% { opacity: 0.3; }
   30% { opacity: 1; }
-}
-
-/* ========================================================================
-   RESPONSIVE — mobile: panel becomes full width at top, smaller padding
-   ======================================================================== */
-@media (max-width: 700px) {
-  #main-stage {
-    align-items: flex-start;
-    padding-top: 4vh;
-  }
-  #duaa-panel {
-    width: 92vw;
-    margin: 0 4vw;
-    padding: 0;
-  }
-  .panel-frame {
-    padding: 1.4rem 1.2rem;
-  }
-  #video-left-fade {
-    background: linear-gradient(to bottom,
-      rgba(6,4,12,0.85) 0%,
-      rgba(6,4,12,0.6) 35%,
-      rgba(6,4,12,0.2) 60%,
-      rgba(6,4,12,0) 75%);
-  }
 }
