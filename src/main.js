@@ -221,6 +221,28 @@ async function boot() {
   };
   requestAnimationFrame(tick);
 
+  // ----- Pause / resume toggle (pauses video + duaa stream + nasheed) -----
+  const pauseBtn = document.getElementById('pause-toggle');
+  const iconPlaying = document.getElementById('icon-playing');
+  const iconPaused  = document.getElementById('icon-paused');
+  let isPaused = false;
+  pauseBtn.addEventListener('click', () => {
+    isPaused = !isPaused;
+    if (isPaused) {
+      video.pause();
+      stream.pause();
+      document.getElementById('nasheed').pause();
+      iconPlaying.style.display = 'none';
+      iconPaused.style.display  = '';
+    } else {
+      video.play().catch(() => {});
+      stream.start();
+      if (!audio.isMuted) document.getElementById('nasheed').play().catch(() => {});
+      iconPlaying.style.display = '';
+      iconPaused.style.display  = 'none';
+    }
+  });
+
   setTimeout(() => loaderEl.classList.add('gone'), 500);
 }
 
